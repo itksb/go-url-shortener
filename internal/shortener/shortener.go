@@ -27,7 +27,7 @@ func NewShortener(l logger.Interface, storage storage) *service {
 // ShortenUrl - saves the given url to the database and returns record id
 func (s *service) ShortenURL(ctx context.Context, url string) (string, error) {
 	if len(url) == 0 {
-		return "", errors.New("Empty url")
+		return "", errors.New("empty url")
 	}
 	id, err := s.storage.SaveURL(ctx, url)
 	if err != nil {
@@ -40,7 +40,7 @@ func (s *service) ShortenURL(ctx context.Context, url string) (string, error) {
 	}
 
 	if savedURL != url {
-		return "", errors.New("Storage error")
+		return "", errors.New("storage error")
 	}
 
 	return id, nil

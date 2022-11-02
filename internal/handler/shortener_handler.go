@@ -27,14 +27,13 @@ func (h *Handler) ShortenURL(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/plain")
 
 	w.Write([]byte(createShortenURL(sURLId, h.cfg.ShortBaseURL)))
-	return
 
 }
 
 // GetURL - endpoint handler
 func (h *Handler) GetURL(w http.ResponseWriter, r *http.Request) {
 	_, id, ok := strings.Cut(r.URL.Path, "/")
-	if ok != true {
+	if !ok {
 		h.logger.Error("parse url id")
 		w.WriteHeader(http.StatusBadRequest)
 		return
@@ -50,5 +49,4 @@ func (h *Handler) GetURL(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Location", originalURL)
 	w.WriteHeader(http.StatusTemporaryRedirect)
 
-	return
 }

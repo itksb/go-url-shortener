@@ -17,7 +17,7 @@ func NewRouter(h *handler.Handler) http.Handler {
 
 		case http.MethodGet:
 			_, after, found := strings.Cut(request.URL.Path, "/")
-			if found == true && len(after) > 0 {
+			if found && len(after) > 0 {
 				h.GetURL(writer, request)
 				return
 			}
