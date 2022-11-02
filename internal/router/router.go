@@ -1,13 +1,14 @@
 package router
 
 import (
+	"github.com/gorilla/mux"
 	"github.com/itksb/go-url-shortener/internal/handler"
 	"net/http"
 	"strings"
 )
 
 // NewRouter - constructor
-func NewRouter(h *handler.Handler) http.Handler {
+func NewRouterOld(h *handler.Handler) http.Handler {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", func(writer http.ResponseWriter, request *http.Request) {
 		switch request.Method {
@@ -37,4 +38,13 @@ func NewRouter(h *handler.Handler) http.Handler {
 	})
 
 	return mux
+}
+
+func NewRouter(h *handler.Handler) http.Handler {
+	r := mux.NewRouter()
+	r.HandleFunc("/", h.ShortenURL).Methods(http.MethodPost)
+	r.HandleFunc("/{id:[0-9]+}", h.GetURL).Methods(http.MethodGet)
+	r.HandleFunc("/health", h.HealthCheck).Methods(http.MethodGet)
+
+	return r
 }
