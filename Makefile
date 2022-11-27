@@ -1,9 +1,9 @@
-.PHONY: build run restart vet lint fmt
+.PHONY: build run restart vet lint fmt test
 
 PID=./cmd/shortener/shortener.pid
 APP=cmd/shortener/shortener
 
-all: fmt lint vet build
+all: fmt lint vet test build
 
 fmt:
 	@echo "Formatting the source code"
@@ -24,6 +24,10 @@ build:
 	@rm -f "${APP}.pid"
 	@echo "Building the binaries"
 	@go build -o "${APP}" cmd/shortener/main.go
+
+test:
+	@echo "Running all tests"
+	@go test -v ./internal/handler
 
 kill:
 	@kill `cat ${PID}` || true
