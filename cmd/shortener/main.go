@@ -6,6 +6,7 @@ import (
 	"github.com/itksb/go-url-shortener/internal/config"
 	"log"
 	"os"
+	"strings"
 )
 
 func main() {
@@ -25,7 +26,20 @@ func main() {
 func useOsEnv(cfg *config.Config) {
 	host, ok := os.LookupEnv("SERVER_ADDRESS")
 	if ok {
-		cfg.AppHost = host
+		addr := strings.SplitN(host, ":", 2)
+		if len(addr) == 2 {
+			cfg.AppHost = addr[0]
+			intValue := 8080
+			_, err := fmt.Sscan(addr[1], &intValue)
+			if err != nil {
+				log.Panic("PORT value is invalid")
+			}
+			if ok {
+				cfg.AppPort = intValue
+			}
+		} else {
+			cfg.AppHost = host
+		}
 	}
 
 	baseURL, ok := os.LookupEnv("BASE_URL")
