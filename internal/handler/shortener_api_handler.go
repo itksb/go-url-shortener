@@ -22,7 +22,7 @@ func (h *Handler) APIShortenURL(w http.ResponseWriter, r *http.Request) {
 		h.logger.Error("api shorten request", err)
 		return
 	}
-	var request shortenRequest = shortenRequest{}
+	request := shortenRequest{}
 
 	if err := json.Unmarshal(reqBytes, &request); err != nil {
 		w.WriteHeader(http.StatusBadRequest)
