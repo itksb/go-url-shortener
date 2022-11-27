@@ -34,12 +34,15 @@ func useOsEnv(cfg *config.Config) {
 	}
 
 	appPortStr, ok := os.LookupEnv("PORT")
-	intValue := 8080
-	_, err := fmt.Sscan(appPortStr, &intValue)
-	if err != nil {
-		log.Panic("PORT value is invalid")
-	}
 	if ok {
-		cfg.AppPort = intValue
+		intValue := 8080
+		_, err := fmt.Sscan(appPortStr, &intValue)
+		if err != nil {
+			log.Panic("PORT value is invalid")
+		}
+		if ok {
+			cfg.AppPort = intValue
+		}
 	}
+
 }
