@@ -38,7 +38,7 @@ func (h *Handler) APIShortenURL(w http.ResponseWriter, r *http.Request) {
 
 	sURLId, err := h.urlshortener.ShortenURL(r.Context(), request.URL)
 	if err != nil {
-		h.logger.Error("Shorten url failed", err)
+		h.logger.Error("ApiShortenUrl. urlshortener.ShortenURL(...) call error", err.Error())
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}

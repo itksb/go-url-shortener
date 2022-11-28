@@ -46,6 +46,12 @@ func (h *Handler) GetURL(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if len(originalURL) == 0 {
+		h.logger.Info("Url not found for id:", id)
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
+
 	w.Header().Set("Location", originalURL)
 	w.WriteHeader(http.StatusTemporaryRedirect)
 

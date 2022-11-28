@@ -20,6 +20,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+	defer app.Close()
 	log.Fatal(app.Run())
 }
 
@@ -57,6 +58,11 @@ func useOsEnv(cfg *config.Config) {
 		if ok {
 			cfg.AppPort = intValue
 		}
+	}
+
+	fileStoragePath, ok := os.LookupEnv("FILE_STORAGE_PATH")
+	if ok {
+		cfg.FileStoragePath = fileStoragePath
 	}
 
 }

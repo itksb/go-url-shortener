@@ -4,28 +4,33 @@ import (
 	"context"
 	"errors"
 	"github.com/itksb/go-url-shortener/pkg/logger"
+	"io"
 )
 
-type storage interface {
+// ShortenerStorage -
+type ShortenerStorage interface {
 	SaveURL(ctx context.Context, url string) (string, error)
 	GetURL(ctx context.Context, id string) (string, error)
+	io.Closer
 }
 
-type service struct {
+// Service -
+type Service struct {
 	logger  logger.Interface
-	storage storage
+	storage ShortenerStorage
+	io.Closer
 }
 
 // NewShortener - constructor
-func NewShortener(l logger.Interface, storage storage) *service {
-	return &service{
+func NewShortener(l logger.Interface, storage ShortenerStorage) *Service {
+	return &Service{
 		logger:  l,
 		storage: storage,
 	}
 }
 
-// ShortenUrl - saves the given url to the database and returns record id
-func (s *service) ShortenURL(ctx context.Context, url string) (string, error) {
+// ShortenURL - saves the given url to the database and returns record id
+func (s *Service) ShortenURL(ctx context.Context, url string) (string, error) {
 	if len(url) == 0 {
 		return "", errors.New("empty url")
 	}
@@ -40,13 +45,18 @@ func (s *service) ShortenURL(ctx context.Context, url string) (string, error) {
 	}
 
 	if savedURL != url {
-		return "", errors.New("storage error")
+		return "", errors.New("ShortenerStorage error: savedURL != url")
 	}
 
 	return id, nil
 }
 
-// GetUrl - retreives url by the id
-func (s *service) GetURL(ctx context.Context, id string) (string, error) {
+// GetURL - retreives url by the id
+func (s *Service) GetURL(ctx context.Context, id string) (string, error) {
 	return s.storage.GetURL(ctx, id)
+}
+
+// Close -
+func (s *Service) Close() error {
+	return s.storage.Close()
 }

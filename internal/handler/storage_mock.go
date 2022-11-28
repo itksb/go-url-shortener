@@ -38,3 +38,5 @@ func (s *storageMock) GetURL(ctx context.Context, id string) (string, error) {
 
 	return url, nil
 }
+
+func (s *storageMock) Close() error { return nil }
