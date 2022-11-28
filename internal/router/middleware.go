@@ -70,6 +70,5 @@ func gzipUnpackMiddleware(next http.Handler) http.Handler {
 		r.Body = reader
 
 		next.ServeHTTP(w, r)
-		return
 	})
 }
