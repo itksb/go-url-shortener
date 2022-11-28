@@ -51,3 +51,25 @@ func gzipMiddleware(next http.Handler) http.Handler {
 
 	})
 }
+
+func gzipUnpackMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// переменная reader будет равна r.Body или *gzip.Reader
+		var reader io.ReadCloser
+		if r.Header.Get(`Content-Encoding`) == `gzip` {
+			gz, err := gzip.NewReader(r.Body)
+			if err != nil {
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+				return
+			}
+			reader = gz
+			defer gz.Close()
+		} else {
+			reader = r.Body
+		}
+		r.Body = reader
+
+		next.ServeHTTP(w, r)
+		return
+	})
+}
