@@ -16,5 +16,7 @@ func NewRouter(h *handler.Handler) http.Handler {
 
 	r.HandleFunc("/health", h.HealthCheck).Methods(http.MethodGet)
 
+	r.Use(gzipMiddleware)
+
 	return r
 }
