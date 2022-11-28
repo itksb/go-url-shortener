@@ -153,6 +153,6 @@ func getLastIDOrDefault(file *os.File) (int64, error) {
 	if ok {
 		return id, err
 	}
-	return 0, fmt.Errorf("Error while parsing last line of the fileWrite")
+	return 0, fmt.Errorf("error while parsing last line of the fileWrite")
 
 }

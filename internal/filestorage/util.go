@@ -16,7 +16,7 @@ func getLastLineOfTheFile(fileHandle *os.File) (string, error) {
 	if err != nil {
 		return line, err
 	}
-	var filesize int64 = stat.Size()
+	var filesize = stat.Size()
 	if filesize == 0 {
 		return "", nil
 	}
