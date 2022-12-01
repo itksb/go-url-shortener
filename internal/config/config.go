@@ -4,6 +4,7 @@ type (
 	// Config - Application configuration
 	Config struct {
 		AppPort      int
+		AppHost      string
 		ShortBaseURL string
 	}
 )
@@ -14,6 +15,7 @@ func NewConfig() (Config, error) {
 	cfg := Config{
 		AppPort:      8080,
 		ShortBaseURL: "http://localhost:8080",
+		AppHost:      "localhost",
 	}
 	return cfg, nil
 }

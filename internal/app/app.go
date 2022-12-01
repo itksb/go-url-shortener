@@ -28,11 +28,11 @@ func NewApp(cfg config.Config) (*App, error) {
 	urlshortener := shortener.NewShortener(l, repo)
 	h := handler.NewHandler(l, urlshortener, cfg)
 
-	router := router.NewRouter(h)
+	routeHandler := router.NewRouter(h)
 
 	srv := &http.Server{
-		Handler: router,
-		Addr:    fmt.Sprintf(":%d", cfg.AppPort),
+		Addr:    fmt.Sprintf("%s:%d", cfg.AppHost, cfg.AppPort),
+		Handler: routeHandler,
 	}
 
 	return &App{
