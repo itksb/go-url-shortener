@@ -10,6 +10,7 @@ import (
 	"testing"
 )
 
+//goland:noinspection HttpUrlsUsage
 func TestHandler_GetURL(t *testing.T) {
 	type handlerFields struct {
 		logger       logger.Interface
@@ -179,35 +180,6 @@ func TestHandler_GetURL2(t *testing.T) {
 				cfg:          tt.fields.cfg,
 			}
 			h.GetURL(tt.args.w, tt.args.r)
-		})
-	}
-}
-
-func TestHandler_ShortenURL(t *testing.T) {
-	type fields struct {
-		logger       logger.Interface
-		urlshortener urlShortener
-		cfg          config.Config
-	}
-	type args struct {
-		w http.ResponseWriter
-		r *http.Request
-	}
-	tests := []struct {
-		name   string
-		fields fields
-		args   args
-	}{
-		// TODO: Add test cases.
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			h := &Handler{
-				logger:       tt.fields.logger,
-				urlshortener: tt.fields.urlshortener,
-				cfg:          tt.fields.cfg,
-			}
-			h.ShortenURL(tt.args.w, tt.args.r)
 		})
 	}
 }

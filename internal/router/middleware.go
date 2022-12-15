@@ -2,6 +2,8 @@ package router
 
 import (
 	"compress/gzip"
+	"fmt"
+	"github.com/itksb/go-url-shortener/pkg/session"
 	"io"
 	"log"
 	"net/http"
@@ -71,4 +73,36 @@ func gzipUnpackMiddleware(next http.Handler) http.Handler {
 
 		next.ServeHTTP(w, r)
 	})
+}
+
+// NewAuthMiddleware
+// see examples: https://bash-shell.net/blog/dependency-injection-golang-http-middleware/
+func NewAuthMiddleware(sessionStore session.Store) func(http.Handler) http.Handler {
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+
+			// проверяет наличие куки сессии,
+			// если она есть, значит пытается дешифровать данные из нее и получить UserId
+			// если НЕ получилось дешифровать  - создает новую сессию, сохраняет ее в куку
+			// если получилось дешифровать, значит создавать и сохранять ничего не надо
+			// в конце в любом случае сохраняет ID сессии в контекст и передает дальше
+
+			userSession, err := sessionStore.Get(r, "s")
+			if err != nil {
+				http.Error(w, "userSession error", http.StatusInternalServerError)
+				return
+			}
+
+			user, ok := userSession.Values["user"].(string)
+			if !ok {
+				// user value is not presented here
+				//http.Error(w, "userSession error", http.StatusInternalServerError)
+				//return
+			}
+
+			fmt.Println("user= " + user)
+
+			next.ServeHTTP(w, r)
+		})
+	}
 }

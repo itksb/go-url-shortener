@@ -70,7 +70,7 @@ func (sc *SecureCookie) Encode(name string, value interface{}) (string, error) {
 	base64.URLEncoding.Encode(base64Encoded, binaryData)
 	binaryData = base64Encoded
 
-	// Inspired by Gorilla Securecookie
+	// Inspired by Gorilla secure cookie
 	// Create MAC - message authentication code for "name|value"
 	binaryData = []byte(fmt.Sprintf("%s|%s|", name, binaryData))
 	authCode := sc.createAuthenticationCode(binaryData[:len(binaryData)-1])
@@ -101,12 +101,12 @@ func (sc *SecureCookie) Decode(name string, value string, dst interface{}) error
 		return err
 	}
 	// verify sign - message authentication code. Value is "value|authCode".
-	splitted := bytes.SplitN(binaryData, []byte("|"), 2)
-	if len(splitted) != 2 {
+	split := bytes.SplitN(binaryData, []byte("|"), 2)
+	if len(split) != 2 {
 		return errors.New("invalid sign (message authentication code)")
 	}
-	valueReceived := splitted[0]
-	authCodeReceived := splitted[1]
+	valueReceived := split[0]
+	authCodeReceived := split[1]
 	binaryData = append([]byte(name+"|"), binaryData[:len(binaryData)-len(authCodeReceived)-1]...)
 	err = sc.verifyAuthenticationCode(binaryData, authCodeReceived)
 	if err != nil {

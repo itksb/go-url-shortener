@@ -37,12 +37,14 @@ type CookieStore struct {
 	Codec   Codec
 }
 
-const sessionKeyInContext int = 0
+type sessionKey int
+
+const sessionKeyInContext sessionKey = 0
 
 // Get returns a session for the given name after adding it to the request context.
 //
 // It returns a new session if the session doesn`t exist.
-func (s *CookieStore) Get(r *http.Request, name string) (*Session, error) {
+func (cs *CookieStore) Get(r *http.Request, name string) (*Session, error) {
 	var err error
 	var ctx = r.Context()
 	sesValue := ctx.Value(sessionKeyInContext)
@@ -51,11 +53,11 @@ func (s *CookieStore) Get(r *http.Request, name string) (*Session, error) {
 		return &session, nil
 	}
 
-	newSession := NewSession(s, name)
+	newSession := NewSession(cs, name)
 	newSession.IsNew = true
 	cookie, err := r.Cookie(name)
 	if err == nil {
-		err = s.Codec.Decode(name, cookie.Value, &newSession.Values)
+		err = cs.Codec.Decode(name, cookie.Value, &newSession.Values)
 		if err == nil {
 			newSession.IsNew = false
 		}

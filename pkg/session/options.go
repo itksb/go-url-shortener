@@ -19,6 +19,7 @@ type Options struct {
 	Secure bool
 	// A cookie with the HttpOnly attribute is inaccessible
 	// to the JavaScript Document.cookie API; it's only sent to the server.
+	//lint:ignore ST1003 this style as in http.Cookie package
 	HttpOnly bool
 }
 

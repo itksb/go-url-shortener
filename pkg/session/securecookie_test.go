@@ -17,7 +17,7 @@ func TestSecureCookie_EncodeDecode(t *testing.T) {
 	data["user"] = "username"
 	data["user_id"] = 1
 
-	sessionName := "cookeiName"
+	sessionName := "cookieName"
 
 	encoded, err := secureCookie.Encode(sessionName, data)
 	if err != nil {

@@ -8,6 +8,8 @@ import (
 )
 
 // ShortenerStorage -
+//
+//goland:noinspection GoNameStartsWithPackageName
 type ShortenerStorage interface {
 	SaveURL(ctx context.Context, url string) (string, error)
 	GetURL(ctx context.Context, id string) (string, error)
@@ -51,7 +53,7 @@ func (s *Service) ShortenURL(ctx context.Context, url string) (string, error) {
 	return id, nil
 }
 
-// GetURL - retreives url by the id
+// GetURL - retrieves url by the id
 func (s *Service) GetURL(ctx context.Context, id string) (string, error) {
 	return s.storage.GetURL(ctx, id)
 }

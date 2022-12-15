@@ -12,6 +12,7 @@ import (
 	"testing"
 )
 
+//goland:noinspection HttpUrlsUsage
 func TestHandler_ApiShortenURL(t *testing.T) {
 	type fields struct {
 		logger       logger.Interface

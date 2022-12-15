@@ -14,10 +14,10 @@ func main() {
 	cfg.UseOsEnv()
 	cfg.UseFlags()
 
-	app, err := app.NewApp(cfg)
+	application, err := app.NewApp(cfg)
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer app.Close()
-	log.Fatal(app.Run())
+	defer application.Close()
+	log.Fatal(application.Run())
 }
