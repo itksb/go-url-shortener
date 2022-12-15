@@ -27,7 +27,7 @@ build:
 
 test:
 	@echo "Running all tests"
-	@go test -v ./internal/handler
+	@go test -mod=mod -v ./internal/handler ./pkg/session/
 
 kill:
 	@kill `cat ${PID}` || true
