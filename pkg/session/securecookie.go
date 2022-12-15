@@ -13,11 +13,13 @@ import (
 	"fmt"
 )
 
+// Codec - common interface for securing cookies
 type Codec interface {
 	Encode(name string, value interface{}) (string, error)
 	Decode(name string, value string, dst interface{}) error
 }
 
+// SecureCookie - base structure for securing cookies
 type SecureCookie struct {
 	hashKey   []byte
 	blockKey  []byte

@@ -22,6 +22,7 @@ type Options struct {
 	HTTPOnly bool
 }
 
+// NewOptions - constructor
 func NewOptions() *Options {
 	return &Options{
 		Path:     "/",
