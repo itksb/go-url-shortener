@@ -43,20 +43,20 @@ const sessionKeyInContext sessionKey = 0
 
 // Get returns a session for the given name after adding it to the request context.
 //
-// It returns a new session if the session doesn`t exist.
+// It returns a session with empty values if the session values are not exist in the request context.
 func (cs *CookieStore) Get(r *http.Request, name string) (*Session, error) {
 	var err error
 	var ctx = r.Context()
 	sesValue := ctx.Value(sessionKeyInContext)
 	session, ok := sesValue.(Session) // type assertion
-	if ok {
+	if ok {                           // session values exist? so just wrap it in new session and return
 		return &session, nil
 	}
 
 	newSession := NewSession(cs, name)
 	newSession.IsNew = true
 	cookie, err := r.Cookie(name)
-	if err == nil {
+	if err == nil { // cookie exists
 		err = cs.Codec.Decode(name, cookie.Value, &newSession.Values)
 		if err == nil {
 			newSession.IsNew = false

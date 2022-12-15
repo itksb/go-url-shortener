@@ -18,8 +18,14 @@ func NewRouter(h *handler.Handler, sessionStore session.Store) (http.Handler, er
 
 	r.MethodFunc(http.MethodPost, "/", h.ShortenURL)
 	r.MethodFunc(http.MethodGet, "/{id:[0-9]+}", h.GetURL)
-	// api
-	r.MethodFunc(http.MethodPost, "/api/shorten", h.APIShortenURL)
+
+	r.Group(func(r2 chi.Router) {
+		r2.Use(NewCors())
+
+		// api
+		r2.MethodFunc(http.MethodPost, "/api/shorten", h.APIShortenURL)
+	})
+
 	r.MethodFunc(http.MethodGet, "/health", h.HealthCheck)
 
 	return r, nil

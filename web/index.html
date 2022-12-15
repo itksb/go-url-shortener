@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<h2>Тестовая страница</h2>
+<input type="text" size="73" id="input-url" value="" alt="Введите урл для сокращения">
+<button id="short-btn">Сократить</button>
+
+
+<h3>ответ:</h3>
+<ul id="response"></ul>
+
+
+<script src="js/main.js"></script>
+<script>
+    (function (w) {
+        const baseUrl = "//localhost:8080"
+        const $response = w.document.getElementById("response")
+        const $shortBtn = w.document.getElementById("short-btn")
+        const $inputUrl = w.document.getElementById("input-url")
+
+        const api = {
+            shorten: async function (url) {
+                const response = await fetch(`${baseUrl}/api/shorten`, {
+                    method: 'POST',
+                    credentials: 'include',
+                    body: JSON.stringify({url})
+                });
+                return response.json()
+            }
+        }
+
+        const handlers = {
+            onShortBtnClick: async function (e) {
+                try {
+                    const response = await api.shorten($inputUrl.value)
+                    const html = `<a href="${response.result}" target="__blank">${response.result}</a>`
+                    const li = w.document.createElement("li");
+                    li.innerHTML = html;
+                    $response.appendChild(li);
+
+                } catch (e) {
+                    $response.append(w.document.createDocumentFragment(`${e}`))
+                }
+            }
+        }
+
+        $shortBtn.addEventListener('click', handlers.onShortBtnClick)
+
+    })(this);
+</script>
+
+</body>
+</html>
