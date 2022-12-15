@@ -24,7 +24,7 @@ func NewCookieStore(codec Codec) *CookieStore {
 			Domain:   "",
 			MaxAge:   60 * 60 * 24,
 			Secure:   false,
-			HttpOnly: true,
+			HTTPOnly: true,
 		},
 		Codec: codec,
 	}
@@ -83,7 +83,7 @@ func (cs *CookieStore) Save(r *http.Request, w http.ResponseWriter, s *Session) 
 		Domain:   options.Domain,
 		MaxAge:   options.MaxAge,
 		Secure:   options.Secure,
-		HttpOnly: options.HttpOnly,
+		HttpOnly: options.HTTPOnly,
 	})
 
 	return nil

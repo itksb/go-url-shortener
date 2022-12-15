@@ -17,10 +17,9 @@ type Options struct {
 	// A cookie with the Secure attribute is only sent to the server
 	// with an encrypted request over the HTTPS protocol.
 	Secure bool
-	// A cookie with the HttpOnly attribute is inaccessible
+	// A cookie with the HTTPOnly attribute is inaccessible
 	// to the JavaScript Document.cookie API; it's only sent to the server.
-	//lint:ignore ST1003 this style as in http.Cookie package
-	HttpOnly bool
+	HTTPOnly bool
 }
 
 func NewOptions() *Options {
@@ -28,6 +27,6 @@ func NewOptions() *Options {
 		Path:     "/",
 		MaxAge:   0,
 		Secure:   false,
-		HttpOnly: true,
+		HTTPOnly: true,
 	}
 }
