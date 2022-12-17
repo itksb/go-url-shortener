@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+
+<h2>Тестовая страница</h2>
+
+<div class="shorten-form">
+    <h3>Введите урл для сокращения:</h3>
+    <input class="shorten-form__input" type="text" size="73" value=""
+           alt="http://www.mysuperlongurl.com/page/100500">
+    <button class="shorten-form__button">Сократить</button>
+</div>
+
+<div class="shorten-response">
+    <h3>Ответ:</h3>
+    <ul class="shorten-response__list">
+        <template id="tmpl-shorten-response__list-item">
+            <li class="shorten-response__list-item">
+                <a href="" target="_blank" rel="noopener noreferrer nofollow"></a>
+            </li>
+        </template>
+    </ul>
+</div>
+
+<div class="shorten-history">
+    <h3>Созданы ранее:</h3>
+    <ul class="shorten-history-list">
+        <template id="tmpl-shorten-history-list__item">
+            <li class="shorten-history-list__item">
+                Сокращенный URL: <a class="shorten-history-list__short-item" href=""
+                                    rel="noopener noreferrer nofollow"></a>
+                Исходный URL: <a class="shorten-history-list__original-item" href=""
+                                 rel="noopener noreferrer nofollow"></a>
+            </li>
+        </template>
+    </ul>
+</div>
+
+<script type="module" src="js/main.js"></script>
+</body>
+</html>
