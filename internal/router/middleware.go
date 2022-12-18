@@ -3,8 +3,11 @@ package router
 import (
 	"compress/gzip"
 	"context"
+	"encoding/gob"
+	"github.com/itksb/go-url-shortener/internal/handler"
 	"github.com/itksb/go-url-shortener/internal/user"
-	"github.com/itksb/go-url-shortener/pkg/session"
+	"github.com/itksb/go-url-shortener/pkg/logger"
+	its "github.com/itksb/go-url-shortener/pkg/session"
 	"io"
 	"log"
 	"net/http"
@@ -79,46 +82,32 @@ func gzipUnpackMiddleware(next http.Handler) http.Handler {
 // NewAuthMiddleware - setup user context
 // Additionally generates UserId and saves it to the cookie and context
 // see examples: https://bash-shell.net/blog/dependency-injection-golang-http-middleware/
-func NewAuthMiddleware(sessionStore session.Store) func(http.Handler) http.Handler {
+func NewAuthMiddleware(sessionStore its.Store, l *logger.Logger) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-
-			// проверяет наличие куки сессии,
-			// если она есть, значит пытается дешифровать данные из нее и получить UserId
-			// если НЕ получилось дешифровать  - создает новую сессию, сохраняет ее в куку
-			// если получилось дешифровать, значит создавать и сохранять ничего не надо
-			// в конце в любом случае сохраняет FIELD_ID сессии в контекст и передает дальше
+			gob.Register(user.FieldID) // suddenly ага :) по идее поместить там где тип, но там нету инициализации пока
 
 			userSession, err := sessionStore.Get(r, "s")
 			if err != nil {
-				http.Error(w, "userSession error", http.StatusInternalServerError)
+				handler.SendJSONError(w, "session restoring error", http.StatusInternalServerError)
+				l.Error(err)
 				return
 			}
 
 			userID, savedInSession := userSession.Values[user.FieldID].(string)
-			userIDCtx, savedInContext := r.Context().Value(user.FieldID).(string)
-			if userID == "" && userIDCtx == "" {
-				userID = user.GenerateUserId()
+			if savedInSession { // just set value in context
 				*r = *r.WithContext(context.WithValue(r.Context(), user.FieldID, userID))
-				err = userSession.Save(r, w)
-				if err != nil {
-					http.Error(w, "save session error", http.StatusInternalServerError)
-					return
-				}
-			}
-			if savedInContext && (userID != userIDCtx) {
-				userID = userIDCtx
-				// save in session
+			} else { // no user in session, then create one
+				userID = user.GenerateUserID()
+				*r = *r.WithContext(context.WithValue(r.Context(), user.FieldID, userID))
 				userSession.Values[user.FieldID] = userID
 				err = userSession.Save(r, w)
 				if err != nil {
 					http.Error(w, "save session error", http.StatusInternalServerError)
+					handler.SendJSONError(w, "save session error", http.StatusInternalServerError)
+					l.Error(err)
 					return
 				}
-			}
-
-			if savedInSession && !savedInContext {
-				*r = *r.WithContext(context.WithValue(r.Context(), user.FieldID, userID))
 			}
 
 			next.ServeHTTP(w, r)

@@ -1,9 +1,11 @@
 package handler
 
 import (
+	"context"
 	"encoding/json"
 	"github.com/itksb/go-url-shortener/internal/config"
 	"github.com/itksb/go-url-shortener/internal/shortener"
+	"github.com/itksb/go-url-shortener/internal/user"
 	"github.com/itksb/go-url-shortener/pkg/logger"
 	"io"
 	"net/http"
@@ -16,7 +18,7 @@ import (
 func TestHandler_ApiShortenURL(t *testing.T) {
 	type fields struct {
 		logger       logger.Interface
-		urlshortener urlShortener
+		urlshortener *shortener.Service
 		cfg          config.Config
 	}
 
@@ -24,6 +26,7 @@ func TestHandler_ApiShortenURL(t *testing.T) {
 		method string
 		target string
 		body   io.Reader
+		userID string
 	}
 
 	type want struct {
@@ -46,14 +49,20 @@ func TestHandler_ApiShortenURL(t *testing.T) {
 		{
 			name: "Positive test",
 			fields: fields{
-				logger:       l,
-				urlshortener: shortener.NewShortener(l, newStorageMock(map[int64]string{1: "http://shorten.ru"})),
-				cfg:          config.Config{ShortBaseURL: "http://short.base"},
+				logger: l,
+				urlshortener: shortener.NewShortener(l, newStorageMock(map[int64]shortener.URLListItem{
+					1: shortener.URLListItem{
+						OriginalURL: "http://shorten.ru",
+						UserID:      "7c7bf38e-a76f-4640-acac-c0bb680b68e4",
+					},
+				})),
+				cfg: config.Config{ShortBaseURL: "http://short.base"},
 			},
 			args: args{
 				method: "POST",
 				target: "/api/shorten",
 				body:   strings.NewReader(`{"url":"http://some.url"}`),
+				userID: "1",
 			},
 			want: want{
 				code:        http.StatusCreated,
@@ -64,14 +73,20 @@ func TestHandler_ApiShortenURL(t *testing.T) {
 		{
 			name: "Negative test",
 			fields: fields{
-				logger:       l,
-				urlshortener: shortener.NewShortener(l, newStorageMock(map[int64]string{1: "http://shorten.ru"})),
-				cfg:          config.Config{ShortBaseURL: "http://short.base"},
+				logger: l,
+				urlshortener: shortener.NewShortener(l, newStorageMock(
+					map[int64]shortener.URLListItem{1: shortener.URLListItem{
+						OriginalURL: "http://shorten.ru",
+						UserID:      "1",
+					}},
+				)),
+				cfg: config.Config{ShortBaseURL: "http://short.base"},
 			},
 			args: args{
 				method: "POST",
 				target: "/api/shorten",
 				body:   strings.NewReader(`{"url":""}`),
+				userID: "1",
 			},
 			want: want{
 				code:        http.StatusBadRequest,
@@ -95,6 +110,8 @@ func TestHandler_ApiShortenURL(t *testing.T) {
 				tt.args.body,
 			)
 
+			*request = *request.WithContext(context.WithValue(request.Context(), user.FieldID, tt.args.userID))
+
 			h.APIShortenURL(writer, request)
 			res := writer.Result()
 			defer res.Body.Close()
@@ -110,7 +127,11 @@ func TestHandler_ApiShortenURL(t *testing.T) {
 
 			if tt.want.code == http.StatusBadRequest && res.StatusCode == http.StatusBadRequest {
 				if len(body) != 0 {
-					t.Fatalf("Status is %d (bad request), but body not empty", http.StatusBadRequest)
+					var apiError APIError
+					err = json.Unmarshal(body, &apiError)
+					if err != nil || apiError.Error == "" {
+						t.Fatalf("Status is %d (bad request), but body does not contain error", http.StatusBadRequest)
+					}
 				}
 				return
 			}

@@ -10,6 +10,7 @@ type userID string
 // FieldID field name for user ID
 const FieldID userID = "uid"
 
-func GenerateUserId() string {
+// GenerateUserID - generates unique user id using uuid
+func GenerateUserID() string {
 	return uuid.NewString()
 }

@@ -49,20 +49,27 @@ func (cs *CookieStore) Get(r *http.Request, name string) (*Session, error) {
 	var ctx = r.Context()
 	sesValue := ctx.Value(sessionKeyInContext)
 	session, ok := sesValue.(Session) // type assertion
-	if ok {                           // session values exist? so just wrap it in new session and return
+	if ok {                           // session exists in context? so just return it
 		return &session, nil
 	}
-
+	// no session in the context, so create new one
 	newSession := NewSession(cs, name)
-	newSession.IsNew = true
+	// maybe session saved in the cookie?
 	cookie, err := r.Cookie(name)
-	if err == nil { // cookie exists
+	if err == nil { // cookie exists, so try to restore session values from the cookie
 		err = cs.Codec.Decode(name, cookie.Value, &newSession.Values)
-		if err == nil {
+		if err == nil { // if no errors, then values restored correctly
 			newSession.IsNew = false
+		} else {
+			// error
+			return nil, err
 		}
+	} else {
+		// named cookie not present, nothing values to restore
+		newSession.IsNew = true
 	}
-
+	// write the created session to the context for further use.
+	// So the next check on the context should return the same session.
 	*r = *r.WithContext(context.WithValue(ctx, sessionKeyInContext, newSession))
 
 	return newSession, nil

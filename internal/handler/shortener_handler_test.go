@@ -14,7 +14,7 @@ import (
 func TestHandler_GetURL(t *testing.T) {
 	type handlerFields struct {
 		logger       logger.Interface
-		urlshortener urlShortener
+		urlshortener *shortener.Service
 		cfg          config.Config
 	}
 	type args struct {
@@ -45,12 +45,15 @@ func TestHandler_GetURL(t *testing.T) {
 			name: "test1",
 			fields: struct {
 				logger       logger.Interface
-				urlshortener urlShortener
+				urlshortener *shortener.Service
 				cfg          config.Config
 			}{
-				logger:       l,
-				urlshortener: shortener.NewShortener(l, newStorageMock(map[int64]string{1: "http://shorten.ru"})),
-				cfg:          config.Config{ShortBaseURL: "http://short.base"},
+				logger: l,
+				urlshortener: shortener.NewShortener(l, newStorageMock(map[int64]shortener.URLListItem{1: shortener.URLListItem{
+					OriginalURL: "http://shorten.ru",
+					UserID:      "1",
+				}})),
+				cfg: config.Config{ShortBaseURL: "http://short.base"},
 			},
 			args: args{
 				method: "GET",
@@ -68,12 +71,15 @@ func TestHandler_GetURL(t *testing.T) {
 			name: "test2",
 			fields: struct {
 				logger       logger.Interface
-				urlshortener urlShortener
+				urlshortener *shortener.Service
 				cfg          config.Config
 			}{
-				logger:       l,
-				urlshortener: shortener.NewShortener(l, newStorageMock(map[int64]string{1: "http://shorten.ru"})),
-				cfg:          config.Config{ShortBaseURL: "http://short.base"},
+				logger: l,
+				urlshortener: shortener.NewShortener(l, newStorageMock(map[int64]shortener.URLListItem{1: shortener.URLListItem{
+					OriginalURL: "http://shorten.ru",
+					UserID:      "1",
+				}})),
+				cfg: config.Config{ShortBaseURL: "http://short.base"},
 			},
 			args: args{
 				method: "GET",
@@ -135,14 +141,23 @@ func TestHandler_GetURL2(t *testing.T) {
 	// определяем структуру теста
 	type want struct {
 		logger       logger.Interface
-		urlshortener urlShortener
+		urlshortener *shortener.Service
 		cfg          config.Config
 	}
 
 	l := loggerMock{}
-	stMock := newStorageMock(map[int64]string{
-		1: "http://ya.rutest/1",
-		2: "https://vk.com",
+	stMock := newStorageMock(map[int64]shortener.URLListItem{
+
+		1: {
+			ID:          1,
+			UserID:      "1",
+			OriginalURL: "http://ya.rutest/1",
+		},
+		2: {
+			ID:          2,
+			UserID:      "1",
+			OriginalURL: "https://vk.com",
+		},
 	})
 
 	type args struct {

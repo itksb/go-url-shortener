@@ -51,7 +51,7 @@ func NewApp(cfg config.Config) (*App, error) {
 	}
 	sessionStore := session.NewCookieStore(codec)
 
-	routeHandler, err := router.NewRouter(h, sessionStore)
+	routeHandler, err := router.NewRouter(h, sessionStore, l)
 	if err != nil {
 		l.Error(fmt.Sprintf("Router creating error: %s", err.Error()))
 		return nil, err
