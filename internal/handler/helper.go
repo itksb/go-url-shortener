@@ -42,9 +42,9 @@ func SendJSONOk(w http.ResponseWriter, content interface{}, code int) error {
 	var js []byte
 	var err error
 
-	switch content.(type) {
+	switch v := content.(type) {
 	case string:
-		js, err = json.MarshalIndent(DefaultResponse{Msg: content.(string)}, "", "  ")
+		js, err = json.MarshalIndent(DefaultResponse{Msg: v}, "", "  ")
 	default:
 		js, err = json.MarshalIndent(content, "", "  ")
 	}
@@ -52,10 +52,14 @@ func SendJSONOk(w http.ResponseWriter, content interface{}, code int) error {
 		http.Error(w, "{\"error\": \"error of json encoding\"}", http.StatusInternalServerError)
 	}
 
-	w.Header().Add("Content-Type", "application/json")
+	if code != http.StatusNoContent {
+		w.Header().Add("Content-Type", "application/json")
+	}
 	w.WriteHeader(code)
 
-	_, err = w.Write(js)
+	if code != http.StatusNoContent {
+		_, err = w.Write(js)
+	}
 	if err != nil {
 		http.Error(w, "{\"error\": \"error sending response\"}", http.StatusInternalServerError)
 	}

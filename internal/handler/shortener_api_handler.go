@@ -94,7 +94,6 @@ func (h *Handler) APIListUserURL(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if len(urlListItems) > 0 {
-		w.WriteHeader(http.StatusOK)
 		if err := SendJSONOk(w, urlListItems, http.StatusOK); err != nil {
 			h.logger.Error(err)
 			http.Error(w, "error creating response", http.StatusInternalServerError)
