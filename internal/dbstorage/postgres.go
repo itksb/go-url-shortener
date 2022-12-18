@@ -11,26 +11,41 @@ import (
 
 // Storage - abstract database service
 type Storage struct {
-	db *sqlx.DB
-	l  logger.Interface
+	dsn string
+	db  *sqlx.DB
+	l   logger.Interface
 }
 
 // NewPostgres - postgres service constructor
 func NewPostgres(dsn string, l logger.Interface) (*Storage, error) {
 	db, err := sqlx.Connect("postgres", dsn)
-	if err != nil {
-		return nil, err
-	}
-
 	return &Storage{
-		db: db,
-		l:  l,
-	}, nil
+		dsn: dsn,
+		db:  db,
+		l:   l,
+	}, err
+}
+
+func (s *Storage) reconnect(ctx context.Context) error {
+	var err error
+	if s.db == nil {
+		s.db, err = sqlx.ConnectContext(ctx, "postgres", s.dsn)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 // Ping - check whether connection to db is valid or not
 func (s *Storage) Ping(ctx context.Context) bool {
-	err := s.db.PingContext(ctx)
+	var err error
+	err = s.reconnect(ctx)
+	if err != nil {
+		s.l.Error(err)
+		return false
+	}
+	err = s.db.PingContext(ctx)
 	if err != nil {
 		s.l.Error(err)
 		return false

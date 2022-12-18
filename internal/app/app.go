@@ -48,7 +48,6 @@ func NewApp(cfg config.Config) (*App, error) {
 	dbService, err := dbstorage.NewPostgres(cfg.Dsn, l)
 	if err != nil {
 		l.Error(fmt.Sprintf("dbstorage.NewPostgres error: %s", err.Error()))
-		return nil, err
 	}
 
 	h := handler.NewHandler(l, urlshortener, dbService, cfg)
