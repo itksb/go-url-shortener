@@ -1,0 +1,17 @@
+version: '3.3'
+services:
+  db:
+    image: postgres:15.1-alpine
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./.pgdata:/var/lib/postgresql/data:rw
+      - /etc/passwd:/etc/passwd:ro
+    user: 1000:1000 # replace to result "$(id -u):$(id -g)"
+    environment:
+      - POSTGRES_USER=user
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=postgres
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -d postgres -U user" ]
+      interval: 2s

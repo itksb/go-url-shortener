@@ -3,6 +3,7 @@ package app
 import (
 	"fmt"
 	"github.com/itksb/go-url-shortener/internal/config"
+	"github.com/itksb/go-url-shortener/internal/dbstorage"
 	"github.com/itksb/go-url-shortener/internal/filestorage"
 	"github.com/itksb/go-url-shortener/internal/handler"
 	"github.com/itksb/go-url-shortener/internal/router"
@@ -20,6 +21,7 @@ type App struct {
 	HTTPServer   *http.Server
 	logger       logger.Interface
 	urlshortener *shortener.Service
+
 	io.Closer
 }
 
@@ -42,7 +44,14 @@ func NewApp(cfg config.Config) (*App, error) {
 		repo = storage.NewStorage(l)
 	}
 	urlshortener := shortener.NewShortener(l, repo)
-	h := handler.NewHandler(l, urlshortener, cfg)
+
+	dbService, err := dbstorage.NewPostgres(cfg.Dsn, l)
+	if err != nil {
+		l.Error(fmt.Sprintf("dbstorage.NewPostgres error: %s", err.Error()))
+		return nil, err
+	}
+
+	h := handler.NewHandler(l, urlshortener, dbService, cfg)
 
 	codec, err := session.NewSecureCookie([]byte(cfg.SessionConfig.HashKey), []byte(cfg.SessionConfig.BlockKey))
 	if err != nil {

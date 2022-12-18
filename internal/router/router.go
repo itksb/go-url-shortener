@@ -29,6 +29,7 @@ func NewRouter(h *handler.Handler, sessionStore session.Store, l *logger.Logger)
 	})
 
 	r.MethodFunc(http.MethodGet, "/health", h.HealthCheck)
+	r.MethodFunc(http.MethodGet, "/ping", h.Ping)
 
 	return r, nil
 }
