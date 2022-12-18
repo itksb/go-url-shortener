@@ -107,7 +107,7 @@ func (cfg *Config) UseFlags() {
 	appHost := flag.String("a", cfg.AppHost, "SERVER_ADDRESS")
 	shortBaseURL := flag.String("b", cfg.ShortBaseURL, "BASE_URL")
 	fileStoragePath := flag.String("f", cfg.FileStoragePath, "FILE_STORAGE_PATH")
-	flag.String("d", cfg.Dsn, "host=%s port=%s user=%s password=%s dbname=%s sslmode=disable")
+	dsn := flag.String("d", cfg.Dsn, "host=%s port=%s user=%s password=%s dbname=%s sslmode=disable")
 	flag.Parse()
 
 	addr := strings.SplitN(*appHost, ":", 2)
@@ -126,5 +126,5 @@ func (cfg *Config) UseFlags() {
 
 	cfg.ShortBaseURL = *shortBaseURL
 	cfg.FileStoragePath = *fileStoragePath
-
+	cfg.Dsn = *dsn
 }
