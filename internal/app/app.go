@@ -9,6 +9,7 @@ import (
 	"github.com/itksb/go-url-shortener/internal/router"
 	"github.com/itksb/go-url-shortener/internal/shortener"
 	"github.com/itksb/go-url-shortener/internal/storage"
+	"github.com/itksb/go-url-shortener/migrate"
 	"github.com/itksb/go-url-shortener/pkg/logger"
 	"github.com/itksb/go-url-shortener/pkg/session"
 	"io"
@@ -33,7 +34,22 @@ func NewApp(cfg config.Config) (*App, error) {
 	}
 
 	var repo shortener.ShortenerStorage
-	if cfg.FileStoragePath != "" {
+	var db *dbstorage.Storage
+
+	if cfg.Dsn != "" { // use postgres database as the storage driver
+		// run migrations
+		err := migrate.Migrate(cfg.Dsn, migrate.Migrations)
+		if err != nil {
+			l.Error(fmt.Sprintf("migration error: %s", err.Error()))
+			return nil, err
+		}
+		db, err = dbstorage.NewPostgres(cfg.Dsn, l)
+		if err != nil {
+			l.Error(fmt.Sprintf("dbstorage.NewPostgres error: %s", err.Error()))
+		}
+		repo = db // pointer nothing criminal
+	} else if cfg.FileStoragePath != "" {
+		// file-based storage
 		repo, err = filestorage.NewStorage(l, cfg.FileStoragePath)
 		if err != nil {
 			l.Error(fmt.Sprintf("File storage error: %s", err.Error()))
@@ -45,12 +61,7 @@ func NewApp(cfg config.Config) (*App, error) {
 	}
 	urlshortener := shortener.NewShortener(l, repo)
 
-	dbService, err := dbstorage.NewPostgres(cfg.Dsn, l)
-	if err != nil {
-		l.Error(fmt.Sprintf("dbstorage.NewPostgres error: %s", err.Error()))
-	}
-
-	h := handler.NewHandler(l, urlshortener, dbService, cfg)
+	h := handler.NewHandler(l, urlshortener, db, cfg)
 
 	codec, err := session.NewSecureCookie([]byte(cfg.SessionConfig.HashKey), []byte(cfg.SessionConfig.BlockKey))
 	if err != nil {

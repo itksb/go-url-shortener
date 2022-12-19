@@ -2,6 +2,7 @@ package dbstorage
 
 import (
 	"context"
+	"errors"
 	"github.com/itksb/go-url-shortener/pkg/logger"
 	"github.com/jmoiron/sqlx"
 	//Under the hood, the driver registers itself as being available to the database/sql package,
@@ -15,6 +16,10 @@ type Storage struct {
 	db  *sqlx.DB
 	l   logger.Interface
 }
+
+var (
+	IncorrectQueryResponse = errors.New("incorrect query response")
+)
 
 // NewPostgres - postgres service constructor
 func NewPostgres(dsn string, l logger.Interface) (*Storage, error) {
@@ -54,6 +59,6 @@ func (s *Storage) Ping(ctx context.Context) bool {
 }
 
 // Close - destructor
-func (s *Storage) Close(ctx context.Context) error {
+func (s *Storage) Close() error {
 	return s.db.Close()
 }
