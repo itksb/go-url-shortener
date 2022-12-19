@@ -8,25 +8,51 @@
 
 <h2>Тестовая страница</h2>
 
-<div class="shorten-form">
-    <h3>Введите урл для сокращения:</h3>
-    <input class="shorten-form__input" type="text" size="73" value=""
-           alt="http://www.mysuperlongurl.com/page/100500">
-    <button class="shorten-form__button">Сократить</button>
+<div class="container">
+
+    <div class="single-input">
+        <div class="shorten-form">
+            <h3>Введите урл для сокращения:</h3>
+            <input class="shorten-form__input" type="text" size="73" value=""
+                   alt="http://www.mysuperlongurl.com/page/100500">
+            <button class="shorten-form__button">Сократить</button>
+        </div>
+        <div class="shorten-response">
+            <h3>Ответ:</h3>
+            <ul class="shorten-response__list">
+                <template id="tmpl-shorten-response__list-item">
+                    <li class="shorten-response__list-item">
+                        <a href="" target="_blank" rel="noopener noreferrer nofollow"></a>
+                    </li>
+                </template>
+            </ul>
+        </div>
+    </div>
+
+    <div class="batch-input">
+        <div class="shorten-form">
+            <h3>Введите урлЫ для сокращения (Batch):</h3>
+            1: <input class="shorten-form__input1" type="text" size="73" value=""
+                   alt="http://www.mysuperlongurl.com/page/100500">
+            2: <input class="shorten-form__input2" type="text" size="73" value=""
+                   alt="http://www.mysuperlongurl.com/page/100500">
+            <button class="shorten-form__button">Сократить</button>
+        </div>
+        <div class="shorten-response">
+            <h3>Ответ:</h3>
+            <ul class="batch-shorten-response__list">
+                <template id="tmpl-batch-shorten-response__list-item">
+                    <li class="shorten-response__list-item">
+                        <a href="" target="_blank" rel="noopener noreferrer nofollow"></a>
+                    </li>
+                </template>
+            </ul>
+        </div>
+    </div>
+
 </div>
 
-<div class="shorten-response">
-    <h3>Ответ:</h3>
-    <ul class="shorten-response__list">
-        <template id="tmpl-shorten-response__list-item">
-            <li class="shorten-response__list-item">
-                <a href="" target="_blank" rel="noopener noreferrer nofollow"></a>
-            </li>
-        </template>
-    </ul>
-</div>
-
-<div class="shorten-history">
+<div class="shorten-history container">
     <h3>Созданы ранее:</h3>
     <ul class="shorten-history-list">
         <template id="tmpl-shorten-history-list__item">
@@ -39,6 +65,15 @@
         </template>
     </ul>
 </div>
+
+<style>
+    .container {
+        border: 1px solid black;
+        margin: 0;
+        padding: 20px 10px;
+    }
+</style>
+
 
 <script type="module" src="js/main.js"></script>
 </body>

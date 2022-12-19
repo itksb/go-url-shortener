@@ -1,6 +1,7 @@
 import {Config} from "./config.js"
 import {ShortenApi} from "./api.js"
 import {ShortenForm} from "./components/shorten-form.js";
+import {BatchShortenForm} from "./components/batch-shorten-form.js";
 import {ShortenHistory} from "./components/shorten-history.js";
 
 class App {
@@ -18,6 +19,11 @@ class App {
             api: this._shortenApi
         })
         this._shortenForm.render()
+        this._batchShortenForm = new BatchShortenForm({
+            querySelector: q,
+            api: this._shortenApi
+        })
+        this._batchShortenForm.render()
         this._shortenHistory = new ShortenHistory({
             querySelector: q,
             api: this._shortenApi

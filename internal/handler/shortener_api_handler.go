@@ -3,33 +3,22 @@ package handler
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/itksb/go-url-shortener/api"
 	"github.com/itksb/go-url-shortener/internal/user"
 	"io"
 	"net/http"
 )
 
-type shortenRequest struct {
-	URL string `json:"url"`
-}
-
-type shortenResponse struct {
-	Result string `json:"result"`
-}
-
-type userURLItem struct {
-	ShortURL    string `json:"short_url"`
-	OriginalURL string `json:"original_url"`
-}
-
 // APIShortenURL -.
 func (h *Handler) APIShortenURL(w http.ResponseWriter, r *http.Request) {
+	defer r.Body.Close()
 	reqBytes, err := io.ReadAll(r.Body)
 	if err != nil {
 		SendJSONError(w, "error of reading request", http.StatusInternalServerError)
 		h.logger.Error("api shorten request", err)
 		return
 	}
-	request := shortenRequest{}
+	request := api.ShortenRequest{}
 
 	if err := json.Unmarshal(reqBytes, &request); err != nil {
 		SendJSONError(w, "bad input request", http.StatusBadRequest)
@@ -64,7 +53,7 @@ func (h *Handler) APIShortenURL(w http.ResponseWriter, r *http.Request) {
 	w.Header().Add("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
 
-	response := shortenResponse{Result: createShortenURL(sURLId, h.cfg.ShortBaseURL)}
+	response := api.ShortenResponse{Result: createShortenURL(sURLId, h.cfg.ShortBaseURL)}
 	if err := encoder.Encode(response); err != nil {
 		h.logger.Error("Encoding to json error", err)
 		w.WriteHeader(http.StatusInternalServerError)
@@ -106,4 +95,49 @@ func (h *Handler) APIListUserURL(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
+}
+
+// APIShortenURLBatch - .
+func (h *Handler) APIShortenURLBatch(w http.ResponseWriter, r *http.Request) {
+	defer r.Body.Close()
+
+	requestItems := api.ShortenBatchRequest{}
+	err := json.NewDecoder(r.Body).Decode(&requestItems)
+	if err != nil {
+		h.logger.Error(err)
+		SendJSONError(w, "bad input json", http.StatusBadRequest)
+		return
+	}
+	if len(requestItems) == 0 {
+		SendJSONError(w, "bad input request: empty input", http.StatusBadRequest)
+		h.logger.Error("bad request. URL is empty", err)
+		return
+	}
+
+	ctx := r.Context()
+	userID, ok := ctx.Value(user.FieldID).(string)
+	if !ok {
+		h.logger.Error("no user id found")
+		SendJSONError(w, "no user found", http.StatusInternalServerError)
+		return
+	}
+
+	response := api.ShortenBatchResponse{}
+	for _, shortenBatchItemRequest := range requestItems {
+		sURLId, err := h.urlshortener.ShortenURL(r.Context(), shortenBatchItemRequest.OriginalURL, userID)
+		if err != nil {
+			h.logger.Error("ApiShortenUrl. urlshortener.ShortenURL(...) call error", err.Error())
+			SendJSONError(w, "shortener service error", http.StatusInternalServerError)
+			return
+		}
+		shortUrl := createShortenURL(sURLId, h.cfg.ShortBaseURL)
+		responseItem := api.ShortenBatchItemResponse{
+			CorrelationID: shortenBatchItemRequest.CorrelationID,
+			ShortURL:      shortUrl,
+		}
+		response = append(response, responseItem)
+	}
+
+	SendJSONOk(w, response, http.StatusCreated)
+
 }
