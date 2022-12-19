@@ -7,6 +7,8 @@ import (
 	"io/fs"
 )
 
+// Migrations - virtual file system
+//
 //go:embed migrations/*.sql
 var Migrations embed.FS
 

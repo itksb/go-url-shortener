@@ -7,6 +7,7 @@ import (
 	"strconv"
 )
 
+// SaveURL - saves url to the postgres db
 func (s *Storage) SaveURL(ctx context.Context, url string, userID string) (string, error) {
 	var err error
 	err = s.reconnect(ctx)
@@ -32,6 +33,7 @@ func (s *Storage) SaveURL(ctx context.Context, url string, userID string) (strin
 	return fmt.Sprint(ID), nil
 }
 
+// GetURL - retrieves url from the underlying db by id
 func (s *Storage) GetURL(ctx context.Context, id string) (string, error) {
 	var err error
 	err = s.reconnect(ctx)
@@ -58,6 +60,7 @@ func (s *Storage) GetURL(ctx context.Context, id string) (string, error) {
 	return originalURL, nil
 }
 
+// ListURLByUserID - list urls by user
 func (s *Storage) ListURLByUserID(ctx context.Context, userID string) ([]shortener.URLListItem, error) {
 	urls := []shortener.URLListItem{}
 	var err error
