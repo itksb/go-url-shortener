@@ -40,12 +40,12 @@ func (s *Service) ShortenURL(ctx context.Context, url string, userID string) (st
 		return "", errors.New("empty url")
 	}
 	id, err := s.storage.SaveURL(ctx, url, userID)
-	if err != nil {
+	if err != nil && !errors.Is(err, ErrDuplicate) {
 		return "", err
 	}
 
-	savedURL, err := s.storage.GetURL(ctx, id)
-	if err != nil {
+	savedURL, err2 := s.storage.GetURL(ctx, id)
+	if err2 != nil {
 		return "", err
 	}
 
@@ -53,7 +53,7 @@ func (s *Service) ShortenURL(ctx context.Context, url string, userID string) (st
 		return "", errors.New("ShortenerStorage error: savedURL != url")
 	}
 
-	return id, nil
+	return id, err
 }
 
 // GetURL - retrieves url by the id
