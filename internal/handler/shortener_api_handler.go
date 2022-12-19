@@ -130,10 +130,10 @@ func (h *Handler) APIShortenURLBatch(w http.ResponseWriter, r *http.Request) {
 			SendJSONError(w, "shortener service error", http.StatusInternalServerError)
 			return
 		}
-		shortUrl := createShortenURL(sURLId, h.cfg.ShortBaseURL)
+		shortURL := createShortenURL(sURLId, h.cfg.ShortBaseURL)
 		responseItem := api.ShortenBatchItemResponse{
 			CorrelationID: shortenBatchItemRequest.CorrelationID,
-			ShortURL:      shortUrl,
+			ShortURL:      shortURL,
 		}
 		response = append(response, responseItem)
 	}
