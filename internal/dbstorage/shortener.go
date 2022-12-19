@@ -18,13 +18,9 @@ func (s *Storage) SaveURL(ctx context.Context, url string, userID string) (strin
 
 	query := `INSERT INTO urls (user_id, original_url) VALUES ($1, $2) RETURNING id`
 	row := s.db.QueryRowContext(ctx, query, userID, url)
-	if err != nil {
-		s.l.Error(err)
-		return "", err
-	}
+
 	var ID int
 	err = row.Scan(&ID)
-
 	if err != nil {
 		s.l.Error(err)
 		return "", err
