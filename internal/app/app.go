@@ -105,7 +105,7 @@ func (app *App) Close() error {
 
 	msg := ""
 	if repoErr != nil {
-		msg = fmt.Sprintf("%s", repoErr.Error())
+		msg = repoErr.Error()
 	}
 	if urlsErr != nil {
 		msg = fmt.Sprintf("%s%s", msg, urlsErr.Error())
