@@ -6,6 +6,16 @@ export class ShortenResponse {
     }
 }
 
+export class ShortenBatchItemResponse {
+    correlation_id
+    short_url
+
+    constructor({correlation_id, short_url}) {
+        this.correlation_id = correlation_id;
+        this.short_url = short_url;
+    }
+}
+
 
 export class ListUserURLResponseItem {
     ShortUrl = ""
@@ -29,6 +39,7 @@ export class ShortenApi {
     constructor({baseUrl}, httpClient) {
         this._baseUrl = baseUrl;
         this._httpClient = httpClient;
+        this._batchCount = 0;
     }
 
     /**
@@ -45,6 +56,26 @@ export class ShortenApi {
         return new ShortenResponse(response)
     }
 
+    /**
+     * @param url string[]
+     * @returns {Promise<ShortenBatchItemResponse[]>}
+     */
+    async shortenBatch(urls) {
+        let response = await this._httpClient(`${this._baseUrl}/api/shorten/batch`, {
+            method: 'POST',
+            credentials: 'include',
+            body: JSON.stringify(
+                [...urls]
+                    .map((u) => {
+                            return {correlation_id: `${this._batchCount++}`, original_url: u}
+                        }
+                    )
+            )
+        })
+        response = await response.json()
+        response = [...response]
+        return response.map(v => new ShortenBatchItemResponse(v))
+    }
 
     /**
      * @returns {Promise<ListUserURLResponse>}
@@ -58,7 +89,7 @@ export class ShortenApi {
         const resp = new ListUserURLResponse();
         [...result]
             .map(v => new ListUserURLResponseItem(v))
-            .map( item => resp.push(item));
+            .map(item => resp.push(item));
         return resp
     }
 }

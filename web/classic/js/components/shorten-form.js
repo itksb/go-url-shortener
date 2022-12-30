@@ -18,8 +18,8 @@ export class ShortenForm {
 
     async _onBtnClick() {
         const q = this._querySelector
-        const $input = q('.shorten-form__input')
-        const $ul = q('.shorten-response__list')
+        const $input = q('.single-input .shorten-form__input')
+        const $ul = q('.single-input .shorten-response__list')
         /** @type {ShortenResponse}  */
         const shortenResponse = await this._api.shorten($input.value)
         const shortenUrl = shortenResponse.result
@@ -32,7 +32,7 @@ export class ShortenForm {
 
     render() {
         const q = this._querySelector
-        const $btn = q('.shorten-form__button')
+        const $btn = q('.single-input .shorten-form__button')
         $btn.addEventListener('click', debounce(this._onBtnClick.bind(this), debounceDelay))
     }
 }
