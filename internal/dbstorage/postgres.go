@@ -54,6 +54,6 @@ func (s *Storage) Ping(ctx context.Context) bool {
 }
 
 // Close - destructor
-func (s *Storage) Close(ctx context.Context) error {
+func (s *Storage) Close() error {
 	return s.db.Close()
 }
