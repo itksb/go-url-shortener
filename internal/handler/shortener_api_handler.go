@@ -2,8 +2,10 @@ package handler
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"github.com/itksb/go-url-shortener/api"
+	"github.com/itksb/go-url-shortener/internal/shortener"
 	"github.com/itksb/go-url-shortener/internal/user"
 	"io"
 	"net/http"
@@ -41,7 +43,7 @@ func (h *Handler) APIShortenURL(w http.ResponseWriter, r *http.Request) {
 	}
 
 	sURLId, err := h.urlshortener.ShortenURL(r.Context(), request.URL, userID)
-	if err != nil {
+	if err != nil && !errors.Is(err, shortener.ErrDuplicate) {
 		h.logger.Error("ApiShortenUrl. urlshortener.ShortenURL(...) call error", err.Error())
 		SendJSONError(w, "shortener service error", http.StatusInternalServerError)
 		return
@@ -51,7 +53,11 @@ func (h *Handler) APIShortenURL(w http.ResponseWriter, r *http.Request) {
 	encoder.SetEscapeHTML(false)
 	encoder.SetIndent("", "  ")
 	w.Header().Add("Content-Type", "application/json")
-	w.WriteHeader(http.StatusCreated)
+	if errors.Is(err, shortener.ErrDuplicate) {
+		w.WriteHeader(http.StatusConflict)
+	} else {
+		w.WriteHeader(http.StatusCreated)
+	}
 
 	response := api.ShortenResponse{Result: createShortenURL(sURLId, h.cfg.ShortBaseURL)}
 	if err := encoder.Encode(response); err != nil {
@@ -123,12 +129,16 @@ func (h *Handler) APIShortenURLBatch(w http.ResponseWriter, r *http.Request) {
 	}
 
 	response := api.ShortenBatchResponse{}
+	conflict := false
 	for _, shortenBatchItemRequest := range requestItems {
 		sURLId, err := h.urlshortener.ShortenURL(r.Context(), shortenBatchItemRequest.OriginalURL, userID)
-		if err != nil {
+		if err != nil && !errors.Is(err, shortener.ErrDuplicate) {
 			h.logger.Error("ApiShortenUrl. urlshortener.ShortenURL(...) call error", err.Error())
 			SendJSONError(w, "shortener service error", http.StatusInternalServerError)
 			return
+		}
+		if errors.Is(err, shortener.ErrDuplicate) {
+			conflict = true
 		}
 		shortURL := createShortenURL(sURLId, h.cfg.ShortBaseURL)
 		responseItem := api.ShortenBatchItemResponse{
@@ -137,7 +147,10 @@ func (h *Handler) APIShortenURLBatch(w http.ResponseWriter, r *http.Request) {
 		}
 		response = append(response, responseItem)
 	}
-
-	SendJSONOk(w, response, http.StatusCreated)
+	if conflict {
+		SendJSONOk(w, response, http.StatusConflict)
+	} else {
+		SendJSONOk(w, response, http.StatusCreated)
+	}
 
 }

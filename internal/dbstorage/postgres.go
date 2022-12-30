@@ -55,5 +55,8 @@ func (s *Storage) Ping(ctx context.Context) bool {
 
 // Close - destructor
 func (s *Storage) Close() error {
-	return s.db.Close()
+	if s.db != nil {
+		return s.db.Close()
+	}
+	return nil
 }

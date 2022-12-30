@@ -1,6 +1,7 @@
 package app
 
 import (
+	"errors"
 	"fmt"
 	"github.com/itksb/go-url-shortener/internal/config"
 	"github.com/itksb/go-url-shortener/internal/dbstorage"
@@ -19,9 +20,10 @@ import (
 
 // App - application
 type App struct {
-	HTTPServer   *http.Server
-	logger       logger.Interface
-	urlshortener *shortener.Service
+	HTTPServer    *http.Server
+	logger        logger.Interface
+	urlshortener  *shortener.Service
+	reposhortener shortener.ShortenerStorage
 
 	io.Closer
 }
@@ -83,9 +85,10 @@ func NewApp(cfg config.Config) (*App, error) {
 	}
 
 	return &App{
-		HTTPServer:   srv,
-		logger:       l,
-		urlshortener: urlshortener,
+		HTTPServer:    srv,
+		logger:        l,
+		urlshortener:  urlshortener,
+		reposhortener: repo,
 	}, nil
 }
 
@@ -97,5 +100,19 @@ func (app *App) Run() error {
 
 // Close -
 func (app *App) Close() error {
-	return app.urlshortener.Close()
+	repoErr := app.reposhortener.Close()
+	urlsErr := app.urlshortener.Close()
+
+	msg := ""
+	if repoErr != nil {
+		msg = repoErr.Error()
+	}
+	if urlsErr != nil {
+		msg = fmt.Sprintf("%s%s", msg, urlsErr.Error())
+	}
+
+	if len(msg) > 0 {
+		return errors.New(msg)
+	}
+	return nil
 }

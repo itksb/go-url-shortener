@@ -2,6 +2,7 @@ package shortener
 
 import (
 	"context"
+	"errors"
 	"io"
 )
 
@@ -14,3 +15,6 @@ type ShortenerStorage interface {
 	ListURLByUserID(ctx context.Context, userID string) ([]URLListItem, error)
 	io.Closer
 }
+
+// ErrDuplicate - duplication error returns from the storage
+var ErrDuplicate = errors.New(`duplicate entity`)

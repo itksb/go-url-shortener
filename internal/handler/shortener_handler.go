@@ -1,6 +1,8 @@
 package handler
 
 import (
+	"errors"
+	"github.com/itksb/go-url-shortener/internal/shortener"
 	"github.com/itksb/go-url-shortener/internal/user"
 	"io"
 	"net/http"
@@ -26,13 +28,18 @@ func (h *Handler) ShortenURL(w http.ResponseWriter, r *http.Request) {
 	}
 
 	sURLId, err := h.urlshortener.ShortenURL(r.Context(), inURL, userID)
-	if err != nil {
+	if err != nil && !errors.Is(err, shortener.ErrDuplicate) {
 		h.logger.Error("Shorten url failed", err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
-	w.WriteHeader(http.StatusCreated)
+	if errors.Is(err, shortener.ErrDuplicate) {
+		w.WriteHeader(http.StatusConflict)
+	} else {
+		w.WriteHeader(http.StatusCreated)
+	}
+
 	w.Header().Set("Content-Type", "text/plain")
 
 	w.Write([]byte(createShortenURL(sURLId, h.cfg.ShortBaseURL)))
