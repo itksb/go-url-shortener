@@ -24,3 +24,6 @@ vendor/
 
 # Configuration files
 .env
+
+.pgdata
+storage.txt

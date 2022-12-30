@@ -22,6 +22,7 @@ type (
 		ShortBaseURL    string
 		FileStoragePath string
 		SessionConfig   SessionConfig
+		Dsn             string
 	}
 )
 
@@ -37,6 +38,7 @@ func NewConfig() (Config, error) {
 			HashKey:  "1234567890",
 			BlockKey: "0123456701234567" + "0123456701234567",
 		},
+		Dsn: "",
 	}
 	return cfg, nil
 }
@@ -93,6 +95,11 @@ func (cfg *Config) UseOsEnv() {
 		cfg.SessionConfig.BlockKey = sessionBlockKey
 	}
 
+	dsn, ok := os.LookupEnv("DATABASE_DSN")
+	if ok {
+		cfg.Dsn = dsn
+	}
+
 }
 
 // UseFlags - scan flags
@@ -100,6 +107,7 @@ func (cfg *Config) UseFlags() {
 	appHost := flag.String("a", cfg.AppHost, "SERVER_ADDRESS")
 	shortBaseURL := flag.String("b", cfg.ShortBaseURL, "BASE_URL")
 	fileStoragePath := flag.String("f", cfg.FileStoragePath, "FILE_STORAGE_PATH")
+	dsn := flag.String("d", cfg.Dsn, "host=%s port=%s user=%s password=%s dbname=%s sslmode=disable")
 	flag.Parse()
 
 	addr := strings.SplitN(*appHost, ":", 2)
@@ -118,4 +126,5 @@ func (cfg *Config) UseFlags() {
 
 	cfg.ShortBaseURL = *shortBaseURL
 	cfg.FileStoragePath = *fileStoragePath
+	cfg.Dsn = *dsn
 }
