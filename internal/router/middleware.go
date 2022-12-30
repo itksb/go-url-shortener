@@ -2,6 +2,12 @@ package router
 
 import (
 	"compress/gzip"
+	"context"
+	"encoding/gob"
+	"github.com/itksb/go-url-shortener/internal/handler"
+	"github.com/itksb/go-url-shortener/internal/user"
+	"github.com/itksb/go-url-shortener/pkg/logger"
+	its "github.com/itksb/go-url-shortener/pkg/session"
 	"io"
 	"log"
 	"net/http"
@@ -71,4 +77,40 @@ func gzipUnpackMiddleware(next http.Handler) http.Handler {
 
 		next.ServeHTTP(w, r)
 	})
+}
+
+// NewAuthMiddleware - setup user context
+// Additionally generates UserId and saves it to the cookie and context
+// see examples: https://bash-shell.net/blog/dependency-injection-golang-http-middleware/
+func NewAuthMiddleware(sessionStore its.Store, l *logger.Logger) func(http.Handler) http.Handler {
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			gob.Register(user.FieldID) // suddenly ага :) по идее поместить там где тип, но там нету инициализации пока
+
+			userSession, err := sessionStore.Get(r, "s")
+			if err != nil {
+				handler.SendJSONError(w, "session restoring error", http.StatusInternalServerError)
+				l.Error(err)
+				return
+			}
+
+			userID, savedInSession := userSession.Values[user.FieldID].(string)
+			if savedInSession { // just set value in context
+				*r = *r.WithContext(context.WithValue(r.Context(), user.FieldID, userID))
+			} else { // no user in session, then create one
+				userID = user.GenerateUserID()
+				*r = *r.WithContext(context.WithValue(r.Context(), user.FieldID, userID))
+				userSession.Values[user.FieldID] = userID
+				err = userSession.Save(r, w)
+				if err != nil {
+					http.Error(w, "save session error", http.StatusInternalServerError)
+					handler.SendJSONError(w, "save session error", http.StatusInternalServerError)
+					l.Error(err)
+					return
+				}
+			}
+
+			next.ServeHTTP(w, r)
+		})
+	}
 }

@@ -3,10 +3,11 @@ package storage
 import (
 	"context"
 	"fmt"
+	"github.com/itksb/go-url-shortener/internal/shortener"
 	"strconv"
 )
 
-func (s *storage) SaveURL(ctx context.Context, url string) (string, error) {
+func (s *storage) SaveURL(ctx context.Context, url string, userID string) (string, error) {
 	s.urlMtx.Lock()
 	defer s.urlMtx.Unlock()
 
@@ -15,7 +16,11 @@ func (s *storage) SaveURL(ctx context.Context, url string) (string, error) {
 	if _, ok := s.urls[id]; ok {
 		return "0", fmt.Errorf("url with id %d already exists", id)
 	}
-	s.urls[id] = url
+	s.urls[id] = shortener.URLListItem{
+		ID:          id,
+		UserID:      userID,
+		OriginalURL: url,
+	}
 	return fmt.Sprint(id), nil
 }
 
@@ -28,12 +33,26 @@ func (s *storage) GetURL(ctx context.Context, id string) (string, error) {
 		return "", err
 	}
 
-	url, ok := s.urls[idInt64]
+	urlListItem, ok := s.urls[idInt64]
 	if !ok {
-		return "", fmt.Errorf("url with id %d is not exists", idInt64)
+		return "", fmt.Errorf("urlListItem with id %d is not exists", idInt64)
 	}
 
-	return url, nil
+	return urlListItem.OriginalURL, nil
+}
+
+func (s *storage) ListURLByUserID(ctx context.Context, userID string) ([]shortener.URLListItem, error) {
+	s.urlMtx.RLock()
+	defer s.urlMtx.RUnlock()
+	var items []shortener.URLListItem
+
+	for _, item := range s.urls {
+		if item.UserID == userID {
+			items = append(items, item)
+		}
+	}
+
+	return items, nil
 }
 
 func (s *storage) Close() error { return nil }

@@ -10,10 +10,11 @@ import (
 	"testing"
 )
 
+//goland:noinspection HttpUrlsUsage
 func TestHandler_GetURL(t *testing.T) {
 	type handlerFields struct {
 		logger       logger.Interface
-		urlshortener urlShortener
+		urlshortener *shortener.Service
 		cfg          config.Config
 	}
 	type args struct {
@@ -44,12 +45,15 @@ func TestHandler_GetURL(t *testing.T) {
 			name: "test1",
 			fields: struct {
 				logger       logger.Interface
-				urlshortener urlShortener
+				urlshortener *shortener.Service
 				cfg          config.Config
 			}{
-				logger:       l,
-				urlshortener: shortener.NewShortener(l, newStorageMock(map[int64]string{1: "http://shorten.ru"})),
-				cfg:          config.Config{ShortBaseURL: "http://short.base"},
+				logger: l,
+				urlshortener: shortener.NewShortener(l, newStorageMock(map[int64]shortener.URLListItem{1: shortener.URLListItem{
+					OriginalURL: "http://shorten.ru",
+					UserID:      "1",
+				}})),
+				cfg: config.Config{ShortBaseURL: "http://short.base"},
 			},
 			args: args{
 				method: "GET",
@@ -67,12 +71,15 @@ func TestHandler_GetURL(t *testing.T) {
 			name: "test2",
 			fields: struct {
 				logger       logger.Interface
-				urlshortener urlShortener
+				urlshortener *shortener.Service
 				cfg          config.Config
 			}{
-				logger:       l,
-				urlshortener: shortener.NewShortener(l, newStorageMock(map[int64]string{1: "http://shorten.ru"})),
-				cfg:          config.Config{ShortBaseURL: "http://short.base"},
+				logger: l,
+				urlshortener: shortener.NewShortener(l, newStorageMock(map[int64]shortener.URLListItem{1: shortener.URLListItem{
+					OriginalURL: "http://shorten.ru",
+					UserID:      "1",
+				}})),
+				cfg: config.Config{ShortBaseURL: "http://short.base"},
 			},
 			args: args{
 				method: "GET",
@@ -134,14 +141,23 @@ func TestHandler_GetURL2(t *testing.T) {
 	// определяем структуру теста
 	type want struct {
 		logger       logger.Interface
-		urlshortener urlShortener
+		urlshortener *shortener.Service
 		cfg          config.Config
 	}
 
 	l := loggerMock{}
-	stMock := newStorageMock(map[int64]string{
-		1: "http://ya.rutest/1",
-		2: "https://vk.com",
+	stMock := newStorageMock(map[int64]shortener.URLListItem{
+
+		1: {
+			ID:          1,
+			UserID:      "1",
+			OriginalURL: "http://ya.rutest/1",
+		},
+		2: {
+			ID:          2,
+			UserID:      "1",
+			OriginalURL: "https://vk.com",
+		},
 	})
 
 	type args struct {
@@ -179,35 +195,6 @@ func TestHandler_GetURL2(t *testing.T) {
 				cfg:          tt.fields.cfg,
 			}
 			h.GetURL(tt.args.w, tt.args.r)
-		})
-	}
-}
-
-func TestHandler_ShortenURL(t *testing.T) {
-	type fields struct {
-		logger       logger.Interface
-		urlshortener urlShortener
-		cfg          config.Config
-	}
-	type args struct {
-		w http.ResponseWriter
-		r *http.Request
-	}
-	tests := []struct {
-		name   string
-		fields fields
-		args   args
-	}{
-		// TODO: Add test cases.
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			h := &Handler{
-				logger:       tt.fields.logger,
-				urlshortener: tt.fields.urlshortener,
-				cfg:          tt.fields.cfg,
-			}
-			h.ShortenURL(tt.args.w, tt.args.r)
 		})
 	}
 }

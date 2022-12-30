@@ -1,9 +1,9 @@
 package handler
 
 import (
-	"context"
 	"encoding/json"
 	"github.com/itksb/go-url-shortener/internal/config"
+	"github.com/itksb/go-url-shortener/internal/shortener"
 	"github.com/itksb/go-url-shortener/pkg/logger"
 	"net/http"
 )
@@ -11,17 +11,18 @@ import (
 // Handler - endpoint handlers
 type Handler struct {
 	logger       logger.Interface
-	urlshortener urlShortener
+	urlshortener *shortener.Service
 	cfg          config.Config
 }
 
-type urlShortener interface {
+/*type urlShortener interface {
 	ShortenURL(ctx context.Context, url string) (string, error)
 	GetURL(ctx context.Context, id string) (string, error)
-}
+	ListUserURL(ctx context.Context) ([]shortener.URLListItem, error)
+}*/
 
 // NewHandler - constructor
-func NewHandler(logger logger.Interface, shortener urlShortener, cfg config.Config) *Handler {
+func NewHandler(logger logger.Interface, shortener *shortener.Service, cfg config.Config) *Handler {
 	return &Handler{
 		logger:       logger,
 		urlshortener: shortener,

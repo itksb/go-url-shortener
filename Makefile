@@ -3,7 +3,7 @@
 PID=./cmd/shortener/shortener.pid
 APP=cmd/shortener/shortener
 
-all: fmt lint vet test build
+all: fmt vet test build
 
 fmt:
 	@echo "Formatting the source code"
@@ -16,7 +16,7 @@ lint:
 
 vet:
 	@echo "Checking for code issues"
-	go vet ./...
+	go vet -vettool=$(which statictest)  ./...
 
 build:
 	@echo "Cleaning old binaries"
@@ -27,7 +27,7 @@ build:
 
 test:
 	@echo "Running all tests"
-	@go test -v ./internal/handler
+	@go test -mod=mod -v ./internal/handler ./pkg/session/
 
 kill:
 	@kill `cat ${PID}` || true

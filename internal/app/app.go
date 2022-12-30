@@ -9,8 +9,10 @@ import (
 	"github.com/itksb/go-url-shortener/internal/shortener"
 	"github.com/itksb/go-url-shortener/internal/storage"
 	"github.com/itksb/go-url-shortener/pkg/logger"
+	"github.com/itksb/go-url-shortener/pkg/session"
 	"io"
 	"net/http"
+	"time"
 )
 
 // App - application
@@ -42,11 +44,23 @@ func NewApp(cfg config.Config) (*App, error) {
 	urlshortener := shortener.NewShortener(l, repo)
 	h := handler.NewHandler(l, urlshortener, cfg)
 
-	routeHandler := router.NewRouter(h)
+	codec, err := session.NewSecureCookie([]byte(cfg.SessionConfig.HashKey), []byte(cfg.SessionConfig.BlockKey))
+	if err != nil {
+		l.Error(fmt.Sprintf("Codec for session creating error: %s", err.Error()))
+		return nil, err
+	}
+	sessionStore := session.NewCookieStore(codec)
+
+	routeHandler, err := router.NewRouter(h, sessionStore, l)
+	if err != nil {
+		l.Error(fmt.Sprintf("Router creating error: %s", err.Error()))
+		return nil, err
+	}
 
 	srv := &http.Server{
-		Addr:    fmt.Sprintf("%s:%d", cfg.AppHost, cfg.AppPort),
-		Handler: routeHandler,
+		Addr:         fmt.Sprintf("%s:%d", cfg.AppHost, cfg.AppPort),
+		Handler:      routeHandler,
+		WriteTimeout: 15 * time.Second,
 	}
 
 	return &App{

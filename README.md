@@ -28,3 +28,24 @@ git fetch template && git checkout template/main .github
 Например в ветке с названием `iter4` запустятся автотесты для итераций с первой по четвертую.
 
 При мерже ветки с итерацией в основную ветку (`main`) будут запускаться все автотесты.
+
+
+# Запуск линтера
+
+Установка (если не установлен):
+
+```bash
+go install honnef.co/go/tools/cmd/staticcheck@latest
+```
+
+Запуск:
+
+```bash
+make vet
+```
+
+или вместе с тестами и билдом:
+
+```bash
+make all
+```

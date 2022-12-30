@@ -40,7 +40,7 @@ func getLastLineOfTheFile(fileHandle *os.File) (string, error) {
 
 		line = fmt.Sprintf("%s%s", string(char), line)
 
-		if cursor == -filesize { // stop if we are at the begining
+		if cursor == -filesize { // stop if we are at the beginning
 			break
 		}
 	}

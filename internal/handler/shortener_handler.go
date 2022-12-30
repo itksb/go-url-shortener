@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"github.com/itksb/go-url-shortener/internal/user"
 	"io"
 	"net/http"
 	"strings"
@@ -16,7 +17,15 @@ func (h *Handler) ShortenURL(w http.ResponseWriter, r *http.Request) {
 	}
 	inURL := string(bytes)
 
-	sURLId, err := h.urlshortener.ShortenURL(r.Context(), inURL)
+	ctx := r.Context()
+	userID, ok := ctx.Value(user.FieldID).(string)
+	if !ok {
+		h.logger.Error("no user id found")
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	sURLId, err := h.urlshortener.ShortenURL(r.Context(), inURL, userID)
 	if err != nil {
 		h.logger.Error("Shorten url failed", err)
 		w.WriteHeader(http.StatusInternalServerError)

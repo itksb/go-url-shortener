@@ -9,12 +9,19 @@ import (
 )
 
 type (
+	// SessionConfig - Application session configuration. All fields required
+	SessionConfig struct {
+		HashKey  string
+		BlockKey string
+	}
+
 	// Config - Application configuration
 	Config struct {
 		AppPort         int
 		AppHost         string
 		ShortBaseURL    string
 		FileStoragePath string
+		SessionConfig   SessionConfig
 	}
 )
 
@@ -26,6 +33,10 @@ func NewConfig() (Config, error) {
 		ShortBaseURL:    "http://localhost:8080",
 		AppHost:         "localhost",
 		FileStoragePath: "",
+		SessionConfig: SessionConfig{
+			HashKey:  "1234567890",
+			BlockKey: "0123456701234567" + "0123456701234567",
+		},
 	}
 	return cfg, nil
 }
@@ -70,6 +81,16 @@ func (cfg *Config) UseOsEnv() {
 	fileStoragePath, ok := os.LookupEnv("FILE_STORAGE_PATH")
 	if ok {
 		cfg.FileStoragePath = fileStoragePath
+	}
+
+	sessionHashKey, ok := os.LookupEnv("SESSION_HASHKEY")
+	if ok {
+		cfg.SessionConfig.HashKey = sessionHashKey
+	}
+
+	sessionBlockKey, ok := os.LookupEnv("SESSION_BLOCKKEY")
+	if ok {
+		cfg.SessionConfig.BlockKey = sessionBlockKey
 	}
 
 }
