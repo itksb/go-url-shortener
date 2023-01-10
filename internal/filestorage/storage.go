@@ -123,7 +123,7 @@ func (s *storage) ListURLByUserID(ctx context.Context, userID string) ([]shorten
 				UserID:      user,
 				ShortURL:    "",
 				OriginalURL: url,
-				DeletedAt:   deletedAt,
+				DeletedAt:   &deletedAt,
 			})
 		}
 	}
@@ -149,9 +149,10 @@ func (s *storage) DeleteURLBatch(ctx context.Context, userID string, ids []strin
 		}
 
 		if item, ok := s.findByID(idInt64, &shortener.URLListItem{}); ok {
-			item.DeletedAt = time.Now().Format("2006-01-02T15:04:05")
+			tCurr := time.Now().Format("2006-01-02T15:04:05")
+			item.DeletedAt = &tCurr
 			// creates duplicates in a file, but it is not a problem for this project
-			err = s.persist(item.ID, item.OriginalURL, item.UserID, item.DeletedAt)
+			err = s.persist(item.ID, item.OriginalURL, item.UserID, *item.DeletedAt)
 			if err != nil {
 				hasError = true
 			}
@@ -180,7 +181,7 @@ func (s *storage) findByID(id int64, listItem *shortener.URLListItem) (*shortene
 			listItem.ID = curID
 			listItem.UserID = userID
 			listItem.OriginalURL = url
-			listItem.DeletedAt = deletedAt
+			listItem.DeletedAt = &deletedAt
 		}
 	}
 

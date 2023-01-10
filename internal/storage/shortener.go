@@ -72,7 +72,8 @@ func (s *storage) DeleteURLBatch(ctx context.Context, userID string, ids []strin
 		// get a "copy" here
 		if entry, ok := s.urls[idInt64]; ok {
 			if entry.UserID == userID {
-				entry.DeletedAt = time.Now().Format("2006-01-02T15:04:05")
+				tCurr := time.Now().Format("2006-01-02T15:04:05")
+				entry.DeletedAt = &tCurr
 				s.urls[idInt64] = entry
 			}
 		} else {

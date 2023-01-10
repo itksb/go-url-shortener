@@ -68,7 +68,7 @@ func (h *Handler) GetURL(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if listItem.DeletedAt != "" {
+	if *listItem.DeletedAt != "" {
 		h.logger.Info("Url was deleted id:", id)
 		w.WriteHeader(http.StatusGone)
 		return

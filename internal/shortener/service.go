@@ -18,13 +18,13 @@ type Service struct {
 
 // URLListItem - .
 type URLListItem struct {
-	ID          int64  `json:"-" db:"id"`
-	UserID      string `json:"-" db:"user_id"`
-	ShortURL    string `json:"short_url" db:"sql.Null*"`
-	OriginalURL string `json:"original_url" db:"original_url"`
-	CreatedAt   string `json:"-"  db:"created_at,sql.Null*"`
-	UpdatedAt   string `json:"-" db:"updated_at,sql.Null*"`
-	DeletedAt   string `json:"-" db:"deleted_at,sql.Null*"`
+	ID          int64   `json:"-" db:"id"`
+	UserID      string  `json:"-" db:"user_id"`
+	ShortURL    string  `json:"short_url" db:"sql.Null*"`
+	OriginalURL string  `json:"original_url" db:"original_url"`
+	CreatedAt   string  `json:"-"  db:"created_at,sql.Null*"`
+	UpdatedAt   string  `json:"-" db:"updated_at,sql.Null*"`
+	DeletedAt   *string `json:"-" db:"deleted_at,sql.Null*"`
 }
 
 // NewShortener - constructor
