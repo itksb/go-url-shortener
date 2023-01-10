@@ -30,18 +30,19 @@ func (s *storageMock) SaveURL(ctx context.Context, url string, userID string) (s
 	return fmt.Sprint(id), nil
 }
 
-func (s *storageMock) GetURL(ctx context.Context, id string) (string, error) {
+func (s *storageMock) GetURL(ctx context.Context, id string) (shortener.URLListItem, error) {
 	idInt64, err := strconv.ParseInt(id, 10, 64)
+	item := shortener.URLListItem{}
 	if err != nil {
-		return "", err
+		return item, err
 	}
 
 	url, ok := s.urls[idInt64]
 	if !ok {
-		return "", fmt.Errorf("url with id %d is not exists", idInt64)
+		return item, fmt.Errorf("url with id %d is not exists", idInt64)
 	}
 
-	return url.OriginalURL, nil
+	return url, nil
 }
 
 func (s *storageMock) ListURLByUserID(ctx context.Context, userID string) ([]shortener.URLListItem, error) {
@@ -54,6 +55,10 @@ func (s *storageMock) ListURLByUserID(ctx context.Context, userID string) ([]sho
 	}
 
 	return items, nil
+}
+
+func (s *storageMock) DeleteURLBatch(ctx context.Context, userID string, ids []string) error {
+	return nil
 }
 
 func (s *storageMock) Close() error { return nil }

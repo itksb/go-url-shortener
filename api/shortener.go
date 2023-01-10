@@ -27,3 +27,6 @@ type ShortenBatchItemResponse struct {
 
 // ShortenBatchResponse -.
 type ShortenBatchResponse []ShortenBatchItemResponse
+
+// ShortenDeleteBatchRequest - .
+type ShortenDeleteBatchRequest []string

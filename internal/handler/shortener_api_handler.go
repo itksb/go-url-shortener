@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -153,4 +154,37 @@ func (h *Handler) APIShortenURLBatch(w http.ResponseWriter, r *http.Request) {
 		SendJSONOk(w, response, http.StatusCreated)
 	}
 
+}
+
+// APIDeleteURLBatch - .
+func (h *Handler) APIDeleteURLBatch(w http.ResponseWriter, r *http.Request) {
+	defer r.Body.Close()
+
+	ids := api.ShortenDeleteBatchRequest{}
+	err := json.NewDecoder(r.Body).Decode(&ids)
+	if err != nil {
+		h.logger.Error(err)
+		SendJSONError(w, "bad input json", http.StatusBadRequest)
+		return
+	}
+	if len(ids) == 0 {
+		SendJSONError(w, "bad input request: empty input", http.StatusBadRequest)
+		h.logger.Error("bad request. URL collection is empty", err)
+		return
+	}
+
+	ctx := r.Context()
+	userID, ok := ctx.Value(user.FieldID).(string)
+	if !ok {
+		h.logger.Error("no user id found")
+		SendJSONError(w, "no user found", http.StatusInternalServerError)
+		return
+	}
+
+	err = h.urlshortener.DeleteURLBatch(context.Background(), userID, ids)
+	if err != nil {
+		h.logger.Error(fmt.Sprintf("error while DeleteURLBatch: %s", err.Error()))
+	}
+
+	w.WriteHeader(http.StatusAccepted)
 }

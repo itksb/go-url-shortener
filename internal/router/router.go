@@ -27,6 +27,7 @@ func NewRouter(h *handler.Handler, sessionStore session.Store, l *logger.Logger)
 		r2.MethodFunc(http.MethodPost, "/api/shorten", h.APIShortenURL)
 		r2.MethodFunc(http.MethodGet, "/api/user/urls", h.APIListUserURL)
 		r2.MethodFunc(http.MethodPost, "/api/shorten/batch", h.APIShortenURLBatch)
+		r2.MethodFunc(http.MethodDelete, "/api/user/urls", h.APIDeleteURLBatch)
 	})
 
 	r.MethodFunc(http.MethodGet, "/health", h.HealthCheck)
