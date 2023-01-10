@@ -42,30 +42,30 @@ func (s *Storage) SaveURL(ctx context.Context, url string, userID string) (strin
 }
 
 // GetURL - retrieves url from the underlying db by id
-func (s *Storage) GetURL(ctx context.Context, id string) (string, error) {
+func (s *Storage) GetURL(ctx context.Context, id string) (shortener.URLListItem, error) {
+	result := shortener.URLListItem{}
 	var err error
 	err = s.reconnect(ctx)
 	if err != nil {
 		s.l.Error(err)
-		return "", err
+		return result, err
 	}
 
-	query := `SELECT original_url FROM urls WHERE id = $1`
+	query := `SELECT id, user_id, original_url, deleted_at FROM urls WHERE id = $1`
 
 	idInt64, err := strconv.ParseInt(id, 10, 64)
 	if err != nil {
-		return "", err
+		return result, err
 	}
 	res := s.db.QueryRowContext(ctx, query, idInt64)
 
-	var originalURL string
-	err = res.Scan(&originalURL)
+	err = res.Scan(&result)
 	if err != nil {
 		s.l.Error(err)
-		return "", err
+		return result, err
 	}
 
-	return originalURL, nil
+	return result, nil
 }
 
 // ListURLByUserID - list urls by user
@@ -87,5 +87,15 @@ func (s *Storage) ListURLByUserID(ctx context.Context, userID string) ([]shorten
 	}
 
 	return urls, nil
+
+}
+
+func (s *Storage) DeleteURLBatch(ctx context.Context, userID string, ids []string) error {
+	var err error
+	err = s.reconnect(ctx)
+	if err != nil {
+		s.l.Error(err)
+		return "", err
+	}
 
 }

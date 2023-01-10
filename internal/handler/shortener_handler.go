@@ -55,20 +55,26 @@ func (h *Handler) GetURL(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	originalURL, err := h.urlshortener.GetURL(r.Context(), id)
+	listItem, err := h.urlshortener.GetURL(r.Context(), id)
 	if err != nil {
 		h.logger.Info("Id not found", id)
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
-	if len(originalURL) == 0 {
+	if len(listItem.OriginalURL) == 0 {
 		h.logger.Info("Url not found for id:", id)
 		w.WriteHeader(http.StatusNotFound)
 		return
 	}
 
-	w.Header().Set("Location", originalURL)
+	if listItem.DeletedAt != "" {
+		h.logger.Info("Url was deleted id:", id)
+		w.WriteHeader(http.StatusGone)
+		return
+	}
+
+	w.Header().Set("Location", listItem.OriginalURL)
 	w.WriteHeader(http.StatusTemporaryRedirect)
 
 }
