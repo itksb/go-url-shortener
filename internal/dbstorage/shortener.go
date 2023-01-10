@@ -61,8 +61,7 @@ func (s *Storage) GetURL(ctx context.Context, id string) (shortener.URLListItem,
 		return result, err
 	}
 	res := s.db.QueryRowContext(ctx, query, idInt64)
-
-	err = res.Scan(&result)
+	err = res.Scan(&result.ID, &result.UserID, &result.OriginalURL, &result.DeletedAt)
 	if err != nil {
 		s.l.Error(err)
 		return result, err
