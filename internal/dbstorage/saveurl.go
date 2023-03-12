@@ -8,8 +8,6 @@ import (
 	"github.com/itksb/go-url-shortener/internal/shortener"
 )
 
-// SaveURL persist url
-// SaveURL persist url
 func (s *Storage) SaveURL(ctx context.Context, url string, userID string) (string, error) {
 	var err error
 	err = s.reconnect(ctx)
