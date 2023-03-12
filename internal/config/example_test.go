@@ -5,6 +5,7 @@ import (
 	"github.com/itksb/go-url-shortener/internal/config"
 )
 
+// ExampleNewConfig example of application configuration
 func ExampleNewConfig() {
 	conf := config.Config{
 		// AppPort http server port of the app
