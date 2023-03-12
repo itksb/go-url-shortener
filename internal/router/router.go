@@ -1,7 +1,6 @@
 package router
 
 import (
-	"fmt"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/itksb/go-url-shortener/internal/handler"
@@ -37,7 +36,7 @@ func NewRouter(h *handler.Handler, sessionStore session.Store, l *logger.Logger,
 
 	if debug {
 		r.Mount("/debug", middleware.Profiler())
-		l.Info(fmt.Sprintf("enables profiler route (due to debug environment): /debug"))
+		l.Info("enables profiler route (due to debug environment): /debug")
 	}
 
 	return r, nil
