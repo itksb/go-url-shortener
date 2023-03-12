@@ -34,3 +34,54 @@ func TestSecureCookie_EncodeDecode(t *testing.T) {
 	}
 
 }
+
+func BenchmarkSecureCookie_Encode(b *testing.B) {
+	b.StopTimer()
+	hashKey := []byte("1234567890")
+	blockKey := []byte("0123456701234567" + "0123456701234567") // 2 * 16
+	secureCookie, err := NewSecureCookie(hashKey, blockKey)
+	if err != nil {
+		b.Error(err)
+	}
+
+	data := make(map[string]interface{})
+	data["user"] = "username"
+	data["user_id"] = 1
+
+	sessionName := "cookieName"
+
+	b.StartTimer()
+	_, err = secureCookie.Encode(sessionName, data)
+	if err != nil {
+		b.Error(err)
+	}
+}
+
+func BenchmarkSecureCookie_Decode(b *testing.B) {
+	b.StopTimer()
+	hashKey := []byte("1234567890")
+	blockKey := []byte("0123456701234567" + "0123456701234567") // 2 * 16
+	secureCookie, err := NewSecureCookie(hashKey, blockKey)
+	if err != nil {
+		b.Error(err)
+	}
+
+	data := make(map[string]interface{})
+	data["user"] = "username"
+	data["user_id"] = 1
+
+	sessionName := "cookieName"
+
+	encoded, err := secureCookie.Encode(sessionName, data)
+	if err != nil {
+		b.Error(err)
+	}
+
+	decoded := make(map[string]interface{})
+	b.StartTimer()
+	err = secureCookie.Decode(sessionName, encoded, &decoded)
+	if err != nil {
+		b.Error(err)
+	}
+
+}
