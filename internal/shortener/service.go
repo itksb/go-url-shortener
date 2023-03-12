@@ -72,7 +72,7 @@ func (s *Service) DeleteURLBatch(ctx context.Context, userID string, ids []strin
 	return s.storage.DeleteURLBatch(ctx, userID, ids)
 }
 
-// Close -
+// Close destructor
 func (s *Service) Close() error {
 	return s.storage.Close()
 }

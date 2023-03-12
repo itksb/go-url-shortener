@@ -9,6 +9,7 @@ import (
 	"time"
 )
 
+// SaveURL persist the given url
 func (s *storage) SaveURL(ctx context.Context, url string, userID string) (string, error) {
 	s.urlMtx.Lock()
 	defer s.urlMtx.Unlock()
@@ -26,6 +27,7 @@ func (s *storage) SaveURL(ctx context.Context, url string, userID string) (strin
 	return fmt.Sprint(id), nil
 }
 
+// GetURL retrieve url
 func (s *storage) GetURL(ctx context.Context, id string) (shortener.URLListItem, error) {
 	s.urlMtx.RLock()
 	defer s.urlMtx.RUnlock()
@@ -45,6 +47,7 @@ func (s *storage) GetURL(ctx context.Context, id string) (shortener.URLListItem,
 	return urlListItem, nil
 }
 
+// ListURLByUserID returns the list of urls
 func (s *storage) ListURLByUserID(ctx context.Context, userID string) ([]shortener.URLListItem, error) {
 	s.urlMtx.RLock()
 	defer s.urlMtx.RUnlock()
@@ -59,6 +62,7 @@ func (s *storage) ListURLByUserID(ctx context.Context, userID string) ([]shorten
 	return items, nil
 }
 
+// DeleteURLBatch removes urls
 func (s *storage) DeleteURLBatch(ctx context.Context, userID string, ids []string) error {
 	s.urlMtx.Lock()
 	defer s.urlMtx.Unlock()
@@ -86,4 +90,5 @@ func (s *storage) DeleteURLBatch(ctx context.Context, userID string, ids []strin
 	return nil
 }
 
+// Close destructor
 func (s *storage) Close() error { return nil }

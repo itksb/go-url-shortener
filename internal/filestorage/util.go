@@ -1,3 +1,4 @@
+// Package filestorage used for persisting urls in the file system
 package filestorage
 
 import (
@@ -7,7 +8,7 @@ import (
 	"strings"
 )
 
-// Read the fileWrite backward, byte by byte (no need to set a buffer size)
+// getLastLineOfTheFile Read the fileWrite backward, byte by byte (no need to set a buffer size)
 // until finding the beginning of a line or the beginning of the fileWrite.
 func getLastLineOfTheFile(fileHandle *os.File) (string, error) {
 	line := ""

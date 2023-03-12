@@ -1,3 +1,4 @@
+// Package dbstorage used for persisting urls in the database
 package dbstorage
 
 import (
@@ -12,7 +13,7 @@ import (
 	"sync"
 )
 
-// SaveURL - saves url to the postgres db
+// SaveURL saves url to the postgres db
 func (s *Storage) SaveURL(ctx context.Context, url string, userID string) (string, error) {
 	var err error
 	err = s.reconnect(ctx)
@@ -44,7 +45,7 @@ func (s *Storage) SaveURL(ctx context.Context, url string, userID string) (strin
 	return fmt.Sprint(ID), nil
 }
 
-// GetURL - retrieves url from the underlying db by id
+// GetURL retrieves url from the underlying db by id
 func (s *Storage) GetURL(ctx context.Context, id string) (shortener.URLListItem, error) {
 	result := shortener.URLListItem{}
 	var err error
@@ -70,7 +71,7 @@ func (s *Storage) GetURL(ctx context.Context, id string) (shortener.URLListItem,
 	return result, nil
 }
 
-// ListURLByUserID - list urls by user
+// ListURLByUserID list urls by user
 func (s *Storage) ListURLByUserID(ctx context.Context, userID string) ([]shortener.URLListItem, error) {
 	urls := []shortener.URLListItem{}
 	var err error
@@ -92,6 +93,7 @@ func (s *Storage) ListURLByUserID(ctx context.Context, userID string) ([]shorten
 
 }
 
+// DeleteURLBatch delete urls by ids
 func (s *Storage) DeleteURLBatch(ctx context.Context, userID string, ids []string) error {
 	var err error
 	err = s.reconnect(ctx)
@@ -147,7 +149,7 @@ func newWorker(input chan string, out chan int64) {
 	}()
 }
 
-// Разделим изначальный канал на N каналов, где N равно числу воркеров, которые будут обрабатывать данные.
+// fanOut Разделим изначальный канал на N каналов, где N равно числу воркеров, которые будут обрабатывать данные.
 // Для этого создадим слайс из N каналов, куда будем раскладывать данные в отдельной горутине по принципу round-robin.
 // Когда родительский канал будет закрыт, горутина завершит работу.
 func fanOut(inputCh chan string, n int) []chan string {
@@ -182,7 +184,7 @@ func fanOut(inputCh chan string, n int) []chan string {
 	return chs
 }
 
-// Напишем fanIn-функцию. Она будет принимать входные каналы как variadic-аргумент,
+// fanIn Напишем fanIn-функцию. Она будет принимать входные каналы как variadic-аргумент,
 // а затем запускать по одной горутине для каждого входного канала.
 // Горутина будет перенаправлять вычитанные из входного канала данные в выходной канал.
 // Чтобы вести учёт запущенных горутин, используем sync.WaitGroup и заблокируемся на wg.Wait.

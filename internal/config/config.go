@@ -1,3 +1,4 @@
+// Package config application configuration
 package config
 
 import (
@@ -9,13 +10,13 @@ import (
 )
 
 type (
-	// SessionConfig - Application session configuration. All fields required
+	// SessionConfig application session configuration. All fields required
 	SessionConfig struct {
-		HashKey  string
-		BlockKey string
+		HashKey  string // secret key, used for hashing algo
+		BlockKey string // secret block key
 	}
 
-	// Config - Application configuration
+	// Config application configuration structure
 	Config struct {
 		AppPort         int
 		AppHost         string
@@ -27,7 +28,7 @@ type (
 	}
 )
 
-// NewConfig - Constructor
+// NewConfig  configuration constructor
 func NewConfig() (Config, error) {
 	// We can use environment parser here
 	cfg := Config{
@@ -45,7 +46,7 @@ func NewConfig() (Config, error) {
 	return cfg, nil
 }
 
-// UseOsEnv - apply environment variables
+// UseOsEnv applies environment variables
 func (cfg *Config) UseOsEnv() {
 	host, ok := os.LookupEnv("SERVER_ADDRESS")
 	if ok {
@@ -113,7 +114,7 @@ func (cfg *Config) UseOsEnv() {
 
 }
 
-// UseFlags - scan flags
+// UseFlags applies run flags
 func (cfg *Config) UseFlags() {
 	appHost := flag.String("a", cfg.AppHost, "SERVER_ADDRESS")
 	shortBaseURL := flag.String("b", cfg.ShortBaseURL, "BASE_URL")
