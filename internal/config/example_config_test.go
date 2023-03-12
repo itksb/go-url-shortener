@@ -28,11 +28,11 @@ func ExampleNewConfig() {
 	}
 
 	fmt.Println(fmt.Sprintf(
-		"[AppPort:%d ShortBaseURL:%s AppHost:%s FileStoragePath:%s Dsn:%s]",
+		"[AppPort:%d ShortBaseURL:%s AppHost:%s FileStoragePath:%s Dsn:%s Debug:%v]",
 		conf.AppPort, conf.ShortBaseURL, conf.AppHost, conf.FileStoragePath,
-		conf.Dsn,
+		conf.Dsn, conf.Debug,
 	))
 
 	// Output:
-	// [AppPort:8080 ShortBaseURL:http://localhost:8080 AppHost:localhost FileStoragePath: Dsn:host=localhost port=5432 user=user password=password dbname=postgres sslmode=disable]
+	// [AppPort:8080 ShortBaseURL:http://localhost:8080 AppHost:localhost FileStoragePath: Dsn:host=localhost port=5432 user=user password=password dbname=postgres sslmode=disable Debug:false]
 }
