@@ -150,9 +150,7 @@ func newWorker(input chan string, out chan int64) {
 	}()
 }
 
-// fanOut Разделим изначальный канал на N каналов, где N равно числу воркеров, которые будут обрабатывать данные.
-// Для этого создадим слайс из N каналов, куда будем раскладывать данные в отдельной горутине по принципу round-robin.
-// Когда родительский канал будет закрыт, горутина завершит работу.
+// fanOut implements fanOut pattern
 func fanOut(inputCh chan string, n int) []chan string {
 	chs := make([]chan string, 0, n)
 	for i := 0; i < n; i++ {
@@ -185,11 +183,7 @@ func fanOut(inputCh chan string, n int) []chan string {
 	return chs
 }
 
-// fanIn Напишем fanIn-функцию. Она будет принимать входные каналы как variadic-аргумент,
-// а затем запускать по одной горутине для каждого входного канала.
-// Горутина будет перенаправлять вычитанные из входного канала данные в выходной канал.
-// Чтобы вести учёт запущенных горутин, используем sync.WaitGroup и заблокируемся на wg.Wait.
-// Тогда выходной канал закроется только после того, как закроются все входные каналы.
+// implements fanIn pattern
 func fanIn(inputChs ...chan int64) chan int64 {
 	outCh := make(chan int64)
 	go func() {
