@@ -5,7 +5,7 @@ import (
 	"net/http"
 )
 
-//NewCors creates middleware for CORS responses
+// NewCors creates middleware for CORS responses
 func NewCors() func(next http.Handler) http.Handler {
 	return cors.Handler(cors.Options{
 		// AllowedOrigins:   []string{"https://foo.com"}, // Use this to allow specific origin hosts
