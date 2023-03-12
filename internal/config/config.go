@@ -9,24 +9,22 @@ import (
 	"strings"
 )
 
-type (
-	// SessionConfig application session configuration. All fields required
-	SessionConfig struct {
-		HashKey  string // secret key, used for hashing algo
-		BlockKey string // secret block key
-	}
+// SessionConfig application session configuration. All fields required
+type SessionConfig struct {
+	HashKey  string // secret key, used for hashing algo
+	BlockKey string // secret block key
+}
 
-	// Config application configuration structure
-	Config struct {
-		AppPort         int
-		AppHost         string
-		ShortBaseURL    string
-		FileStoragePath string
-		SessionConfig   SessionConfig
-		Dsn             string
-		Debug           bool
-	}
-)
+// Config application configuration structure
+type Config struct {
+	AppPort         int           // application port
+	AppHost         string        // application host
+	ShortBaseURL    string        // short base url
+	FileStoragePath string        // file storage path
+	SessionConfig   SessionConfig // session configuration
+	Dsn             string        // data source name
+	Debug           bool          // is debug mode
+}
 
 // NewConfig  configuration constructor
 func NewConfig() (Config, error) {

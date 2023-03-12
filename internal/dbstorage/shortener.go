@@ -137,6 +137,7 @@ func (s *Storage) DeleteURLBatch(ctx context.Context, userID string, ids []strin
 	return err
 }
 
+// newWorker creates worker
 func newWorker(input chan string, out chan int64) {
 	go func() {
 		for val := range input {
