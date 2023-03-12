@@ -49,7 +49,7 @@ func TestHandler_GetURL(t *testing.T) {
 				cfg          config.Config
 			}{
 				logger: l,
-				urlshortener: shortener.NewShortener(l, newStorageMock(map[int64]shortener.URLListItem{1: shortener.URLListItem{
+				urlshortener: shortener.NewShortener(l, newStorageMock(map[int64]shortener.URLListItem{1: {
 					OriginalURL: "http://shorten.ru",
 					UserID:      "1",
 				}})),
@@ -75,7 +75,7 @@ func TestHandler_GetURL(t *testing.T) {
 				cfg          config.Config
 			}{
 				logger: l,
-				urlshortener: shortener.NewShortener(l, newStorageMock(map[int64]shortener.URLListItem{1: shortener.URLListItem{
+				urlshortener: shortener.NewShortener(l, newStorageMock(map[int64]shortener.URLListItem{1: {
 					OriginalURL: "http://shorten.ru",
 					UserID:      "1",
 				}})),

@@ -51,7 +51,7 @@ func TestHandler_ApiShortenURL(t *testing.T) {
 			fields: fields{
 				logger: l,
 				urlshortener: shortener.NewShortener(l, newStorageMock(map[int64]shortener.URLListItem{
-					1: shortener.URLListItem{
+					1: {
 						OriginalURL: "http://shorten.ru",
 						UserID:      "7c7bf38e-a76f-4640-acac-c0bb680b68e4",
 					},
@@ -75,7 +75,7 @@ func TestHandler_ApiShortenURL(t *testing.T) {
 			fields: fields{
 				logger: l,
 				urlshortener: shortener.NewShortener(l, newStorageMock(
-					map[int64]shortener.URLListItem{1: shortener.URLListItem{
+					map[int64]shortener.URLListItem{1: {
 						OriginalURL: "http://shorten.ru",
 						UserID:      "1",
 					}},
