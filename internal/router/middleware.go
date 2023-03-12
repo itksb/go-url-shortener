@@ -79,6 +79,9 @@ func gzipUnpackMiddleware(next http.Handler) http.Handler {
 	})
 }
 
+const MsgSessionRestoringError = "session restoring error"
+const MsgSaveSessionError = "save session error"
+
 // NewAuthMiddleware - setup user context
 // Additionally generates UserId and saves it to the cookie and context
 // see examples: https://bash-shell.net/blog/dependency-injection-golang-http-middleware/
@@ -89,7 +92,7 @@ func NewAuthMiddleware(sessionStore its.Store, l *logger.Logger) func(http.Handl
 
 			userSession, err := sessionStore.Get(r, "s")
 			if err != nil {
-				handler.SendJSONError(w, "session restoring error", http.StatusInternalServerError)
+				handler.SendJSONError(w, MsgSessionRestoringError, http.StatusInternalServerError)
 				l.Error(err)
 				return
 			}
@@ -103,8 +106,8 @@ func NewAuthMiddleware(sessionStore its.Store, l *logger.Logger) func(http.Handl
 				userSession.Values[user.FieldID] = userID
 				err = userSession.Save(r, w)
 				if err != nil {
-					http.Error(w, "save session error", http.StatusInternalServerError)
-					handler.SendJSONError(w, "save session error", http.StatusInternalServerError)
+					http.Error(w, MsgSaveSessionError, http.StatusInternalServerError)
+					handler.SendJSONError(w, MsgSaveSessionError, http.StatusInternalServerError)
 					l.Error(err)
 					return
 				}
