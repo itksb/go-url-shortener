@@ -137,7 +137,6 @@ func (s *Storage) DeleteURLBatch(ctx context.Context, userID string, ids []strin
 	return err
 }
 
-// newWorker creates worker
 func newWorker(input chan string, out chan int64) {
 	go func() {
 		for val := range input {
@@ -150,7 +149,6 @@ func newWorker(input chan string, out chan int64) {
 	}()
 }
 
-// fanOut implements fanOut pattern
 func fanOut(inputCh chan string, n int) []chan string {
 	chs := make([]chan string, 0, n)
 	for i := 0; i < n; i++ {
@@ -183,7 +181,6 @@ func fanOut(inputCh chan string, n int) []chan string {
 	return chs
 }
 
-// implements fanIn pattern
 func fanIn(inputChs ...chan int64) chan int64 {
 	outCh := make(chan int64)
 	go func() {
