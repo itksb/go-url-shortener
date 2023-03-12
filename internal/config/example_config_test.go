@@ -27,7 +27,7 @@ func ExampleNewConfig() {
 		Debug: false,
 	}
 
-	fmt.Sprintf(
+	fmt.Printf(
 		"[AppPort:%d ShortBaseURL:%s AppHost:%s FileStoragePath:%s Dsn:%s Debug:%v]\n",
 		conf.AppPort, conf.ShortBaseURL, conf.AppHost, conf.FileStoragePath,
 		conf.Dsn, conf.Debug,
