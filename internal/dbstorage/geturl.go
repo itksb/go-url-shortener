@@ -1,4 +1,3 @@
-// Package dbstorage used for persisting urls in the database
 package dbstorage
 
 import (
