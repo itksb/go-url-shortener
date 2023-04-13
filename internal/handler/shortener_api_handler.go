@@ -23,7 +23,7 @@ func (h *Handler) APIShortenURL(w http.ResponseWriter, r *http.Request) {
 	}
 	request := api.ShortenRequest{}
 
-	if err := json.Unmarshal(reqBytes, &request); err != nil {
+	if err = json.Unmarshal(reqBytes, &request); err != nil {
 		SendJSONError(w, "bad input request", http.StatusBadRequest)
 		h.logger.Error("ApiShortenUrl. Bad request. Json Unmarshalling error", err)
 		return
