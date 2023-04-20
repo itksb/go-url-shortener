@@ -16,6 +16,8 @@ import (
 	"io"
 	"net/http"
 	"time"
+
+	"golang.org/x/crypto/acme/autocert"
 )
 
 // App - application
@@ -24,6 +26,7 @@ type App struct {
 	logger        logger.Interface
 	urlshortener  *shortener.Service
 	reposhortener shortener.ShortenerStorage
+	enableHTTPS   bool
 
 	io.Closer
 }
@@ -78,16 +81,7 @@ func NewApp(cfg config.Config) (*App, error) {
 		return nil, err
 	}
 
-	srv := &http.Server{
-		Addr:    fmt.Sprintf("%s:%d", cfg.AppHost, cfg.AppPort),
-		Handler: routeHandler,
-		WriteTimeout: func() time.Duration {
-			if cfg.Debug {
-				return 0
-			}
-			return 15 * time.Second
-		}(),
-	}
+	srv := createHTTPServer(routeHandler, cfg)
 
 	l.Info("is debug environment? ", cfg.Debug)
 
@@ -96,12 +90,16 @@ func NewApp(cfg config.Config) (*App, error) {
 		logger:        l,
 		urlshortener:  urlshortener,
 		reposhortener: repo,
+		enableHTTPS:   cfg.EnableHTTPS,
 	}, nil
 }
 
 // Run - run the application instance
 func (app *App) Run() error {
-	app.logger.Info("server started", "addr", app.HTTPServer.Addr)
+	app.logger.Info("server starting", "addr", app.HTTPServer.Addr)
+	if app.enableHTTPS {
+		return app.HTTPServer.ListenAndServeTLS("", "")
+	}
 	return app.HTTPServer.ListenAndServe()
 }
 
@@ -122,4 +120,42 @@ func (app *App) Close() error {
 		return errors.New(msg)
 	}
 	return nil
+}
+
+func createHTTPServer(routeHandler http.Handler, cfg config.Config) *http.Server {
+	var srv *http.Server
+
+	if cfg.EnableHTTPS {
+		// конструируем менеджер TLS-сертификатов
+		manager := &autocert.Manager{
+			// функция, принимающая Terms of Service издателя сертификатов
+			Prompt: autocert.AcceptTOS,
+		}
+		// конструируем сервер с поддержкой TLS
+		srv = &http.Server{
+			Addr:    fmt.Sprintf("%s:%d", cfg.AppHost, cfg.AppPort),
+			Handler: routeHandler,
+			WriteTimeout: func() time.Duration {
+				if cfg.Debug {
+					return 0
+				}
+				return 15 * time.Second
+			}(),
+			// для TLS-конфигурации используем менеджер сертификатов
+			TLSConfig: manager.TLSConfig(),
+		}
+	} else {
+		srv = &http.Server{
+			Addr:    fmt.Sprintf("%s:%d", cfg.AppHost, cfg.AppPort),
+			Handler: routeHandler,
+			WriteTimeout: func() time.Duration {
+				if cfg.Debug {
+					return 0
+				}
+				return 15 * time.Second
+			}(),
+		}
+	}
+
+	return srv
 }
