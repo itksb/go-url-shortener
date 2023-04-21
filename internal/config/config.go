@@ -145,9 +145,15 @@ func (cfg *Config) UseFlags() {
 	flag.Parse()
 
 	var err error
-	cfg.AppHost, cfg.AppPort, err = makeAppHostPort(*appHost)
+	parsedHost, parsedPort, err := makeAppHostPort(*appHost)
 	if err != nil {
 		log.Panic(err)
+	}
+	if parsedHost != "" {
+		cfg.AppHost = parsedHost
+	}
+	if parsedPort != 0 {
+		cfg.AppPort = parsedPort
 	}
 
 	cfg.ShortBaseURL = *shortBaseURL
@@ -162,10 +168,10 @@ func (cfg *Config) UseFlags() {
 		}
 	})
 	cfg.EnableHTTPS = enableHTTPS
-	if configFile != nil {
+	if *configFile != "" {
 		cfg.Config = *configFile
 	}
-	if configFile2 != nil {
+	if *configFile2 != "" {
 		cfg.Config = *configFile2
 	}
 }
