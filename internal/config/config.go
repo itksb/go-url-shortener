@@ -205,18 +205,26 @@ func (cfg *Config) UseConfigFile() {
 		if err != nil {
 			return
 		}
-		mergeConfigs(cfg, &config)
+		err = mergeConfigs(cfg, &config)
+		if err != nil {
+			return
+		}
 	}
 }
 
 // mergeConfigs merges configs into one
 // first config values have priority
-func mergeConfigs(result, cfg2 *Config) {
-	if (result.AppHost == "" || result.AppHost == "localhost") && cfg2.AppHost != "" {
-		host, port, err := makeAppHostPort(cfg2.AppHost)
-		log.Printf("parsed host=%s port=%d", host, port)
-		if err == nil {
-			result.AppHost = host
+func mergeConfigs(result, cfg2 *Config) error {
+	if result.AppHost == "" || result.AppHost == "localhost" {
+		if cfg2.AppHost != "" {
+			host, port, err := makeAppHostPort(cfg2.AppHost)
+			if err != nil {
+				return err
+			}
+			log.Printf("parsed host=%s port=%d", host, port)
+			if host != "" {
+				result.AppHost = host
+			}
 			if port != 0 {
 				result.AppPort = port
 			}
@@ -239,4 +247,6 @@ func mergeConfigs(result, cfg2 *Config) {
 	if !result.EnableHTTPS {
 		result.EnableHTTPS = cfg2.EnableHTTPS
 	}
+
+	return nil
 }
