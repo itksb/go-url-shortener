@@ -30,6 +30,7 @@ func main() {
 	}
 	cfg.UseOsEnv()
 	cfg.UseFlags()
+	cfg.UseConfigFile()
 
 	application, err := app.NewApp(cfg)
 	if err != nil {
