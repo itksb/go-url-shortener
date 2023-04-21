@@ -192,6 +192,7 @@ func makeAppHostPort(appHost string) (string, int, error) {
 	}
 }
 
+// UseConfigFile applies config from json file
 func (cfg *Config) UseConfigFile() {
 	if cfg.Config != "" {
 		// открытие файла с конфигурацией
