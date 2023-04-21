@@ -212,8 +212,9 @@ func (cfg *Config) UseConfigFile() {
 // mergeConfigs merges configs into one
 // first config values have priority
 func mergeConfigs(result, cfg2 *Config) {
-	if result.AppHost == "" || result.AppHost == "localhost" && cfg2.AppHost != "" {
+	if (result.AppHost == "" || result.AppHost == "localhost") && cfg2.AppHost != "" {
 		host, port, err := makeAppHostPort(cfg2.AppHost)
+		log.Printf("parsed host=%s port=%d", host, port)
 		if err == nil {
 			result.AppHost = host
 			if port != 0 {
@@ -221,6 +222,7 @@ func mergeConfigs(result, cfg2 *Config) {
 			}
 		}
 	}
+
 	if result.ShortBaseURL == "" || result.ShortBaseURL == "http://localhost:8080" {
 		result.ShortBaseURL = cfg2.ShortBaseURL
 	}
