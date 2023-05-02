@@ -3,6 +3,7 @@ package dbstorage
 
 import (
 	"context"
+	"database/sql"
 	"github.com/itksb/go-url-shortener/pkg/logger"
 	"github.com/jmoiron/sqlx"
 	//Under the hood, the driver registers itself as being available to the database/sql package,
@@ -18,9 +19,19 @@ type Storage struct {
 	l   logger.Interface
 }
 
+const dbDriverName = "postgres"
+
 // NewPostgres - postgres service constructor
-func NewPostgres(dsn string, l logger.Interface) (*Storage, error) {
-	db, err := sqlx.Connect("postgres", dsn)
+// sqlDB can be nil. If nil, then it will be created
+func NewPostgres(dsn string, l logger.Interface, sqlDB *sql.DB) (*Storage, error) {
+	var db *sqlx.DB
+	var err error
+	if sqlDB != nil {
+		db = sqlx.NewDb(sqlDB, dbDriverName)
+	} else {
+		db, err = sqlx.Connect(dbDriverName, dsn)
+	}
+
 	return &Storage{
 		dsn: dsn,
 		db:  db,

@@ -48,7 +48,7 @@ func NewApp(cfg config.Config) (*App, error) {
 			l.Error(fmt.Sprintf("migration error: %s", err.Error()))
 			return nil, err
 		}
-		db, err = dbstorage.NewPostgres(cfg.Dsn, l)
+		db, err = dbstorage.NewPostgres(cfg.Dsn, l, nil)
 		if err != nil {
 			l.Error(fmt.Sprintf("dbstorage.NewPostgres error: %s", err.Error()))
 		}
