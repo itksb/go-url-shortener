@@ -49,7 +49,8 @@ func main() {
 		sigint := make(chan os.Signal, 1)
 		signal.Notify(sigint, syscall.SIGTERM, syscall.SIGINT, syscall.SIGQUIT)
 		<-sigint
-		ctx, _ := context.WithTimeout(context.Background(), time.Second*10)
+		ctx, cancelFunc := context.WithTimeout(context.Background(), time.Second*10)
+		defer cancelFunc()
 		if err2 := application.HTTPServer.Shutdown(ctx); err2 != nil {
 			log.Printf("HTTP Server Shutdown Error: %v", err2)
 		}
