@@ -88,9 +88,9 @@ func TestHandler_Ping(t *testing.T) {
 	t.Run("positive", func(tt *testing.T) {
 		ctrl := gomock.NewController(tt)
 		// Create a new instance of the mock DB service
-		pingDb := NewMockIPingableDB(ctrl)
+		pingDB := NewMockIPingableDB(ctrl)
 		// Set up the handler with the mock DB service
-		handler := &Handler{dbping: pingDb}
+		handler := &Handler{dbping: pingDB}
 
 		// Set up the request and response
 		req, err := http.NewRequest("GET", "/ping", nil)
@@ -100,7 +100,7 @@ func TestHandler_Ping(t *testing.T) {
 		rr := httptest.NewRecorder()
 
 		// Expect a call to Ping with a context and return true
-		pingDb.EXPECT().Ping(gomock.Any()).Return(true)
+		pingDB.EXPECT().Ping(gomock.Any()).Return(true)
 		// Call the handler's Ping method
 		handler.Ping(rr, req)
 
@@ -111,10 +111,10 @@ func TestHandler_Ping(t *testing.T) {
 	t.Run("if ping false", func(tt *testing.T) {
 		ctrl := gomock.NewController(tt)
 		// Create a new instance of the mock DB service
-		pingDb := NewMockIPingableDB(ctrl)
+		pingDB := NewMockIPingableDB(ctrl)
 		l, _ := logger.NewLogger()
 		// Set up the handler with the mock DB service
-		handler := &Handler{dbping: pingDb, logger: l}
+		handler := &Handler{dbping: pingDB, logger: l}
 
 		// Set up the request and response
 		req, err := http.NewRequest("GET", "/ping", nil)
@@ -124,7 +124,7 @@ func TestHandler_Ping(t *testing.T) {
 		rr := httptest.NewRecorder()
 
 		// Expect a call to Ping with a context and return false
-		pingDb.EXPECT().Ping(gomock.Any()).Return(false)
+		pingDB.EXPECT().Ping(gomock.Any()).Return(false)
 		// Call the handler's Ping method
 		handler.Ping(rr, req)
 		assert.Equal(tt, http.StatusInternalServerError, rr.Code)
@@ -133,10 +133,10 @@ func TestHandler_Ping(t *testing.T) {
 	t.Run("if POST request", func(tt *testing.T) {
 		ctrl := gomock.NewController(tt)
 		// Create a new instance of the mock DB service
-		pingDb := NewMockIPingableDB(ctrl)
+		pingDB := NewMockIPingableDB(ctrl)
 		l, _ := logger.NewLogger()
 		// Set up the handler with the mock DB service
-		handler := &Handler{dbping: pingDb, logger: l}
+		handler := &Handler{dbping: pingDB, logger: l}
 
 		// Set up the request and response
 		req, err := http.NewRequest("POST", "/ping", nil)
@@ -146,7 +146,7 @@ func TestHandler_Ping(t *testing.T) {
 		rr := httptest.NewRecorder()
 
 		// Expect a call to Ping with a context and return false
-		pingDb.EXPECT().Ping(gomock.Any()).Return(false)
+		pingDB.EXPECT().Ping(gomock.Any()).Return(false)
 		// Call the handler's Ping method
 		handler.Ping(rr, req)
 		assert.Equal(tt, http.StatusInternalServerError, rr.Code)

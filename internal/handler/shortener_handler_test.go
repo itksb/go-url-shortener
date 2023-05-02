@@ -120,16 +120,15 @@ func TestHandler_GetURL(t *testing.T) {
 				t.Errorf("Expected status code %d, got %d", tt.want.code, res.StatusCode)
 			}
 
-			defer func() {
-				err := res.Body.Close()
-				if err != nil {
-					t.Error(err.Error())
-				}
-			}()
 			resBody, err := io.ReadAll(res.Body)
 			if err != nil {
 				t.Fatal(err)
 			}
+			err = res.Body.Close()
+			if err != nil {
+				t.Fatal(err)
+			}
+
 			if string(resBody) != tt.want.response {
 				t.Errorf("Expected body %s, got %s", tt.want.response, writer.Body.String())
 			}
