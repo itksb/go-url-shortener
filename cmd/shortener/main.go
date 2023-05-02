@@ -9,6 +9,7 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 )
 
 // go run -ldflags "-X main.Version=v1.1.1 \
@@ -48,7 +49,7 @@ func main() {
 		sigint := make(chan os.Signal, 1)
 		signal.Notify(sigint, syscall.SIGTERM, syscall.SIGINT, syscall.SIGQUIT)
 		<-sigint
-		ctx := context.Background()
+		ctx, _ := context.WithTimeout(context.Background(), time.Second*10)
 		if err2 := application.HTTPServer.Shutdown(ctx); err2 != nil {
 			log.Printf("HTTP Server Shutdown Error: %v", err2)
 		}

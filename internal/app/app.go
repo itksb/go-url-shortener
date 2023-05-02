@@ -66,7 +66,7 @@ func NewApp(cfg config.Config) (*App, error) {
 	}
 	urlshortener := shortener.NewShortener(l, repo)
 
-	h := handler.NewHandler(l, urlshortener, db, cfg)
+	h := handler.NewHandler(l, urlshortener, db, db, cfg)
 
 	codec, err := session.NewSecureCookie([]byte(cfg.SessionConfig.HashKey), []byte(cfg.SessionConfig.BlockKey))
 	if err != nil {
