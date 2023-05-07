@@ -67,7 +67,7 @@ func (s *Service) ListURLByUserID(ctx context.Context, userID string) ([]URLList
 	return s.storage.ListURLByUserID(ctx, userID)
 }
 
-// DeleteURLs - makrs urls
+// DeleteURLBatch - makrs urls
 func (s *Service) DeleteURLBatch(ctx context.Context, userID string, ids []string) error {
 	return s.storage.DeleteURLBatch(ctx, userID, ids)
 }
