@@ -13,14 +13,22 @@ type Handler struct {
 	urlshortener *shortener.Service
 	cfg          config.Config
 	dbservice    *dbstorage.Storage
+	dbping       IPingableDB
 }
 
 // NewHandler - constructor
-func NewHandler(logger logger.Interface, shortener *shortener.Service, dbservice *dbstorage.Storage, cfg config.Config) *Handler {
+func NewHandler(
+	logger logger.Interface,
+	shortener *shortener.Service,
+	dbservice *dbstorage.Storage,
+	dbping IPingableDB,
+	cfg config.Config,
+) *Handler {
 	return &Handler{
 		logger:       logger,
 		urlshortener: shortener,
 		cfg:          cfg,
 		dbservice:    dbservice,
+		dbping:       dbping,
 	}
 }

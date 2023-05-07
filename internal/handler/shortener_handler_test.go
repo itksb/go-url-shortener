@@ -1,12 +1,17 @@
 package handler
 
 import (
+	"context"
+	"fmt"
 	"github.com/itksb/go-url-shortener/internal/config"
+	"github.com/itksb/go-url-shortener/internal/dbstorage"
 	"github.com/itksb/go-url-shortener/internal/shortener"
+	"github.com/itksb/go-url-shortener/internal/user"
 	"github.com/itksb/go-url-shortener/pkg/logger"
 	"io"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 )
 
@@ -115,11 +120,15 @@ func TestHandler_GetURL(t *testing.T) {
 				t.Errorf("Expected status code %d, got %d", tt.want.code, res.StatusCode)
 			}
 
-			defer res.Body.Close()
 			resBody, err := io.ReadAll(res.Body)
 			if err != nil {
 				t.Fatal(err)
 			}
+			err = res.Body.Close()
+			if err != nil {
+				t.Fatal(err)
+			}
+
 			if string(resBody) != tt.want.response {
 				t.Errorf("Expected body %s, got %s", tt.want.response, writer.Body.String())
 			}
@@ -197,4 +206,133 @@ func TestHandler_GetURL2(t *testing.T) {
 			h.GetURL(tt.args.w, tt.args.r)
 		})
 	}
+}
+
+//
+
+func TestHandler_ShortenURL(t *testing.T) {
+
+	t.Run("shorten success", func(tt *testing.T) {
+
+		// Create a mock HTTP request and response
+		req := httptest.NewRequest(http.MethodPost, "/shorten", strings.NewReader("https://example.com"))
+		resp := httptest.NewRecorder()
+
+		// Create a new handler and URL shortener service
+		l, err := logger.NewLogger()
+		if err != nil {
+			t.Errorf("error calling logger.NewLogger, %s", err.Error())
+		}
+
+		storage := newStorageMock(map[int64]shortener.URLListItem{})
+
+		cfg := config.Config{
+			ShortBaseURL: "http://short.example.com",
+		}
+
+		h := NewHandler(
+			l,
+			shortener.NewShortener(l, storage),
+			&dbstorage.Storage{},
+			&dbstorage.Storage{},
+			cfg,
+		)
+
+		userID := "user1"
+		// Set user ID in request context
+		ctx := context.WithValue(req.Context(), user.FieldID, userID)
+		req = req.WithContext(ctx)
+
+		// Call the handler
+		h.ShortenURL(resp, req)
+
+		// Check response status code
+		if resp.Code != http.StatusCreated {
+			t.Errorf("expected status code %d, but got %d", http.StatusCreated, resp.Code)
+		}
+
+		// Check response body
+		expectedURL := fmt.Sprintf("%s/%s", cfg.ShortBaseURL, "0")
+		if resp.Body.String() != expectedURL {
+			t.Errorf("expected response body %q, but got %q", expectedURL, resp.Body.String())
+		}
+
+	})
+
+	t.Run("empty request", func(tt *testing.T) {
+
+		// Create a mock HTTP request and response
+		req := httptest.NewRequest(http.MethodPost, "/shorten", strings.NewReader(""))
+		resp := httptest.NewRecorder()
+
+		// Create a new handler and URL shortener service
+		l, err := logger.NewLogger()
+		if err != nil {
+			t.Errorf("error calling logger.NewLogger, %s", err.Error())
+		}
+
+		storage := newStorageMock(map[int64]shortener.URLListItem{})
+
+		cfg := config.Config{
+			ShortBaseURL: "http://short.example.com",
+		}
+
+		h := NewHandler(
+			l,
+			shortener.NewShortener(l, storage),
+			&dbstorage.Storage{},
+			&dbstorage.Storage{},
+			cfg,
+		)
+
+		userID := "user1"
+		// Set user ID in request context
+		ctx := context.WithValue(req.Context(), user.FieldID, userID)
+		req = req.WithContext(ctx)
+
+		// Call the handler
+		h.ShortenURL(resp, req)
+
+		// Check response status code
+		if resp.Code != http.StatusInternalServerError {
+			t.Errorf("expected status code %d, but got %d", http.StatusInternalServerError, resp.Code)
+		}
+
+	})
+
+	t.Run("no user id", func(tt *testing.T) {
+
+		// Create a mock HTTP request and response
+		req := httptest.NewRequest(http.MethodPost, "/shorten", strings.NewReader(""))
+		resp := httptest.NewRecorder()
+
+		// Create a new handler and URL shortener service
+		l, err := logger.NewLogger()
+		if err != nil {
+			t.Errorf("error calling logger.NewLogger, %s", err.Error())
+		}
+
+		storage := newStorageMock(map[int64]shortener.URLListItem{})
+
+		cfg := config.Config{
+			ShortBaseURL: "http://short.example.com",
+		}
+
+		h := NewHandler(
+			l,
+			shortener.NewShortener(l, storage),
+			&dbstorage.Storage{},
+			&dbstorage.Storage{},
+			cfg,
+		)
+
+		// Call the handler
+		h.ShortenURL(resp, req)
+
+		// Check response status code
+		if resp.Code != http.StatusInternalServerError {
+			t.Errorf("expected status code %d, but got %d", http.StatusInternalServerError, resp.Code)
+		}
+
+	})
 }

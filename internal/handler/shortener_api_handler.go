@@ -14,7 +14,12 @@ import (
 
 // APIShortenURL -.
 func (h *Handler) APIShortenURL(w http.ResponseWriter, r *http.Request) {
-	defer r.Body.Close()
+	defer func() {
+		err := r.Body.Close()
+		if err != nil {
+			h.logger.Error(err.Error())
+		}
+	}()
 	reqBytes, err := io.ReadAll(r.Body)
 	if err != nil {
 		SendJSONError(w, "error of reading request", http.StatusInternalServerError)
@@ -106,7 +111,12 @@ func (h *Handler) APIListUserURL(w http.ResponseWriter, r *http.Request) {
 
 // APIShortenURLBatch - .
 func (h *Handler) APIShortenURLBatch(w http.ResponseWriter, r *http.Request) {
-	defer r.Body.Close()
+	defer func() {
+		err := r.Body.Close()
+		if err != nil {
+			h.logger.Error(err.Error())
+		}
+	}()
 
 	requestItems := api.ShortenBatchRequest{}
 	err := json.NewDecoder(r.Body).Decode(&requestItems)
@@ -158,7 +168,12 @@ func (h *Handler) APIShortenURLBatch(w http.ResponseWriter, r *http.Request) {
 
 // APIDeleteURLBatch - .
 func (h *Handler) APIDeleteURLBatch(w http.ResponseWriter, r *http.Request) {
-	defer r.Body.Close()
+	defer func() {
+		err := r.Body.Close()
+		if err != nil {
+			h.logger.Error(err.Error())
+		}
+	}()
 
 	ids := api.ShortenDeleteBatchRequest{}
 	err := json.NewDecoder(r.Body).Decode(&ids)
