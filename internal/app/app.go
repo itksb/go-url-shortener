@@ -40,7 +40,7 @@ func NewApp(cfg config.Config) (*App, error) {
 
 	if cfg.Dsn != "" { // use postgres database as the storage driver
 		// run migrations
-		err := migrate.Migrate(cfg.Dsn, migrate.Migrations)
+		err = migrate.Migrate(cfg.Dsn, migrate.Migrations)
 		if err != nil {
 			l.Error(fmt.Sprintf("migration error: %s", err.Error()))
 			return nil, err
