@@ -72,17 +72,24 @@ func NewApp(cfg config.Config) (*App, error) {
 	}
 	sessionStore := session.NewCookieStore(codec)
 
-	routeHandler, err := router.NewRouter(h, sessionStore, l)
+	routeHandler, err := router.NewRouter(h, sessionStore, l, cfg.Debug)
 	if err != nil {
 		l.Error(fmt.Sprintf("Router creating error: %s", err.Error()))
 		return nil, err
 	}
 
 	srv := &http.Server{
-		Addr:         fmt.Sprintf("%s:%d", cfg.AppHost, cfg.AppPort),
-		Handler:      routeHandler,
-		WriteTimeout: 15 * time.Second,
+		Addr:    fmt.Sprintf("%s:%d", cfg.AppHost, cfg.AppPort),
+		Handler: routeHandler,
+		WriteTimeout: func() time.Duration {
+			if cfg.Debug {
+				return 0
+			}
+			return 15 * time.Second
+		}(),
 	}
+
+	l.Info("is debug environment? ", cfg.Debug)
 
 	return &App{
 		HTTPServer:    srv,

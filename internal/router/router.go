@@ -2,6 +2,7 @@ package router
 
 import (
 	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
 	"github.com/itksb/go-url-shortener/internal/handler"
 	"github.com/itksb/go-url-shortener/pkg/logger"
 	"github.com/itksb/go-url-shortener/pkg/session"
@@ -9,7 +10,7 @@ import (
 )
 
 // NewRouter - constructor
-func NewRouter(h *handler.Handler, sessionStore session.Store, l *logger.Logger) (http.Handler, error) {
+func NewRouter(h *handler.Handler, sessionStore session.Store, l *logger.Logger, debug bool) (http.Handler, error) {
 	r := chi.NewRouter()
 
 	r.Use(gzipUnpackMiddleware)
@@ -32,6 +33,11 @@ func NewRouter(h *handler.Handler, sessionStore session.Store, l *logger.Logger)
 
 	r.MethodFunc(http.MethodGet, "/health", h.HealthCheck)
 	r.MethodFunc(http.MethodGet, "/ping", h.Ping)
+
+	if debug {
+		r.Mount("/debug", middleware.Profiler())
+		l.Info("enables profiler route (due to debug environment): /debug")
+	}
 
 	return r, nil
 }
