@@ -24,6 +24,7 @@ type Config struct {
 	SessionConfig   SessionConfig // session configuration
 	Dsn             string        // data source name
 	Debug           bool          // is debug mode
+	EnableHTTPS     bool          // enable https
 }
 
 // NewConfig  configuration constructor
@@ -31,15 +32,16 @@ func NewConfig() (Config, error) {
 	// We can use environment parser here
 	cfg := Config{
 		AppPort:         8080,
-		ShortBaseURL:    "http://localhost:8080",
 		AppHost:         "localhost",
+		ShortBaseURL:    "http://localhost:8080",
 		FileStoragePath: "",
 		SessionConfig: SessionConfig{
 			HashKey:  "1234567890",
 			BlockKey: "0123456701234567" + "0123456701234567",
 		},
-		Dsn:   "",
-		Debug: false,
+		Dsn:         "",
+		Debug:       false,
+		EnableHTTPS: false,
 	}
 	return cfg, nil
 }
@@ -110,6 +112,10 @@ func (cfg *Config) UseOsEnv() {
 		}
 	}
 
+	_, ok = os.LookupEnv("ENABLE_HTTPS")
+	if ok {
+		cfg.EnableHTTPS = true
+	}
 }
 
 // UseFlags applies run flags
@@ -125,6 +131,8 @@ func (cfg *Config) UseFlags() {
 	}()
 	debugStr := flag.String("e", curDebug, "prod|debug")
 	dsn := flag.String("d", cfg.Dsn, "host=%s port=%s user=%s password=%s dbname=%s sslmode=disable")
+
+	flag.Bool("s", cfg.EnableHTTPS, "EnableHTTPS")
 	flag.Parse()
 
 	addr := strings.SplitN(*appHost, ":", 2)
@@ -145,5 +153,13 @@ func (cfg *Config) UseFlags() {
 	cfg.FileStoragePath = *fileStoragePath
 	cfg.Dsn = *dsn
 	cfg.Debug = strings.ToLower(*debugStr) == "debug"
+
+	var enableHTTPS bool
+	flag.Visit(func(f *flag.Flag) {
+		if f.Name == "s" {
+			enableHTTPS = true
+		}
+	})
+	cfg.EnableHTTPS = enableHTTPS
 
 }
