@@ -1,3 +1,4 @@
+// Package router
 package router
 
 import (
@@ -28,6 +29,7 @@ type gzipWriter struct {
 	Writer io.Writer
 }
 
+// Write writer
 func (w gzipWriter) Write(b []byte) (int, error) {
 	// w.Writer будет отвечать за gzip-сжатие, поэтому пишем в него
 	return w.Writer.Write(b)
@@ -79,10 +81,13 @@ func gzipUnpackMiddleware(next http.Handler) http.Handler {
 	})
 }
 
+// MsgSessionRestoringError error description constant
 const MsgSessionRestoringError = "session restoring error"
+
+// MsgSaveSessionError  error description constant
 const MsgSaveSessionError = "save session error"
 
-// NewAuthMiddleware - setup user context
+// NewAuthMiddleware setup user context
 // Additionally generates UserId and saves it to the cookie and context
 // see examples: https://bash-shell.net/blog/dependency-injection-golang-http-middleware/
 func NewAuthMiddleware(sessionStore its.Store, l *logger.Logger) func(http.Handler) http.Handler {

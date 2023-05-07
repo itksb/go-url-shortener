@@ -1,3 +1,4 @@
+// Package filestorage used for persisting urls in the file system
 package filestorage
 
 import (
@@ -25,7 +26,7 @@ type storage struct {
 	mtx          sync.RWMutex
 }
 
-// NewStorage - constructor
+// NewStorage constructor
 func NewStorage(logger logger.Interface, filename string) (*storage, error) {
 	fileRead, err := os.OpenFile(filename, os.O_CREATE|os.O_RDONLY, os.ModePerm)
 	if err != nil {
@@ -58,6 +59,7 @@ func NewStorage(logger logger.Interface, filename string) (*storage, error) {
 	return s, nil
 }
 
+// Close destructor
 func (s *storage) Close() error {
 	err1 := s.fileRead.Close()
 	err2 := s.fileWrite.Close()
@@ -67,6 +69,7 @@ func (s *storage) Close() error {
 	return fmt.Errorf("fileRead: %s. fileWrite: %s", err1.Error(), err2.Error())
 }
 
+// SaveURL persist the given url to the file system
 func (s *storage) SaveURL(ctx context.Context, url string, userID string) (string, error) {
 	s.mtx.Lock()
 	defer s.mtx.Unlock()
@@ -86,6 +89,7 @@ func (s *storage) SaveURL(ctx context.Context, url string, userID string) (strin
 	return strconv.FormatInt(id, 10), nil
 }
 
+// GetURL retrieves the url from the file system by id
 func (s *storage) GetURL(ctx context.Context, id string) (shortener.URLListItem, error) {
 	s.mtx.Lock()
 	defer s.mtx.Unlock()
@@ -104,6 +108,7 @@ func (s *storage) GetURL(ctx context.Context, id string) (shortener.URLListItem,
 	return result, nil
 }
 
+// ListURLByUserID returns list of urls
 func (s *storage) ListURLByUserID(ctx context.Context, userID string) ([]shortener.URLListItem, error) {
 	var line string
 	var foundItems []shortener.URLListItem
@@ -137,6 +142,7 @@ func (s *storage) ListURLByUserID(ctx context.Context, userID string) ([]shorten
 	return foundItems, nil
 }
 
+// DeleteURLBatch removes urls from the file system
 func (s *storage) DeleteURLBatch(ctx context.Context, userID string, ids []string) error {
 	s.mtx.Lock()
 	defer s.mtx.Unlock()

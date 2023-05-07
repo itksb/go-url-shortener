@@ -1,3 +1,4 @@
+// Package handler creates server routines for the routes
 package handler
 
 import (
@@ -16,6 +17,7 @@ func newStorageMock(urls map[int64]shortener.URLListItem) *storageMock {
 	return &storageMock{urls: urls, currentURLID: 0}
 }
 
+// SaveURL persist given url
 func (s *storageMock) SaveURL(ctx context.Context, url string, userID string) (string, error) {
 	id := s.currentURLID
 	s.currentURLID++
@@ -30,6 +32,7 @@ func (s *storageMock) SaveURL(ctx context.Context, url string, userID string) (s
 	return fmt.Sprint(id), nil
 }
 
+// GetURL retrieve url
 func (s *storageMock) GetURL(ctx context.Context, id string) (shortener.URLListItem, error) {
 	idInt64, err := strconv.ParseInt(id, 10, 64)
 	item := shortener.URLListItem{}
@@ -45,6 +48,7 @@ func (s *storageMock) GetURL(ctx context.Context, id string) (shortener.URLListI
 	return url, nil
 }
 
+// ListURLByUserID returns list of urls
 func (s *storageMock) ListURLByUserID(ctx context.Context, userID string) ([]shortener.URLListItem, error) {
 	var items []shortener.URLListItem
 
@@ -57,8 +61,10 @@ func (s *storageMock) ListURLByUserID(ctx context.Context, userID string) ([]sho
 	return items, nil
 }
 
+// DeleteURLBatch removes urls
 func (s *storageMock) DeleteURLBatch(ctx context.Context, userID string, ids []string) error {
 	return nil
 }
 
+// Close destructor
 func (s *storageMock) Close() error { return nil }

@@ -1,3 +1,4 @@
+// Package config application configuration
 package config
 
 import (
@@ -8,26 +9,24 @@ import (
 	"strings"
 )
 
-type (
-	// SessionConfig - Application session configuration. All fields required
-	SessionConfig struct {
-		HashKey  string
-		BlockKey string
-	}
+// SessionConfig application session configuration. All fields required
+type SessionConfig struct {
+	HashKey  string // secret key, used for hashing algo
+	BlockKey string // secret block key
+}
 
-	// Config - Application configuration
-	Config struct {
-		AppPort         int
-		AppHost         string
-		ShortBaseURL    string
-		FileStoragePath string
-		SessionConfig   SessionConfig
-		Dsn             string
-		Debug           bool
-	}
-)
+// Config application configuration structure
+type Config struct {
+	AppPort         int           // application port
+	AppHost         string        // application host
+	ShortBaseURL    string        // short base url
+	FileStoragePath string        // file storage path
+	SessionConfig   SessionConfig // session configuration
+	Dsn             string        // data source name
+	Debug           bool          // is debug mode
+}
 
-// NewConfig - Constructor
+// NewConfig  configuration constructor
 func NewConfig() (Config, error) {
 	// We can use environment parser here
 	cfg := Config{
@@ -45,7 +44,7 @@ func NewConfig() (Config, error) {
 	return cfg, nil
 }
 
-// UseOsEnv - apply environment variables
+// UseOsEnv applies environment variables
 func (cfg *Config) UseOsEnv() {
 	host, ok := os.LookupEnv("SERVER_ADDRESS")
 	if ok {
@@ -113,7 +112,7 @@ func (cfg *Config) UseOsEnv() {
 
 }
 
-// UseFlags - scan flags
+// UseFlags applies run flags
 func (cfg *Config) UseFlags() {
 	appHost := flag.String("a", cfg.AppHost, "SERVER_ADDRESS")
 	shortBaseURL := flag.String("b", cfg.ShortBaseURL, "BASE_URL")

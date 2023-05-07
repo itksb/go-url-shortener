@@ -1,3 +1,4 @@
+// Package dbstorage used for persisting urls in the database
 package dbstorage
 
 import (
@@ -9,7 +10,8 @@ import (
 	_ "github.com/lib/pq"
 )
 
-// Storage - abstract database service
+// Storage database service
+// implements ShortenerStorage interface and Closer interface
 type Storage struct {
 	dsn string
 	db  *sqlx.DB
@@ -26,6 +28,7 @@ func NewPostgres(dsn string, l logger.Interface) (*Storage, error) {
 	}, err
 }
 
+// reconnect to db if connection is not created
 func (s *Storage) reconnect(ctx context.Context) error {
 	var err error
 	if s.db == nil {
@@ -37,7 +40,7 @@ func (s *Storage) reconnect(ctx context.Context) error {
 	return nil
 }
 
-// Ping - check whether connection to db is valid or not
+// Ping check whether connection to db is valid or not
 func (s *Storage) Ping(ctx context.Context) bool {
 	var err error
 	err = s.reconnect(ctx)
@@ -53,7 +56,7 @@ func (s *Storage) Ping(ctx context.Context) bool {
 	return true
 }
 
-// Close - destructor
+// Close destructor
 func (s *Storage) Close() error {
 	if s.db != nil {
 		return s.db.Close()
