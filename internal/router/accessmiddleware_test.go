@@ -8,6 +8,7 @@ import (
 	"testing"
 )
 
+// TestNewAccessMiddleware - tests
 func TestNewAccessMiddleware(t *testing.T) {
 
 	l, err := logger.NewLogger()

@@ -27,6 +27,7 @@ type URLListItem struct {
 	DeletedAt   *string `json:"-" db:"deleted_at,sql.Null*"`
 }
 
+// InternalStats - .
 type InternalStats struct {
 	URLs  int `json:"urls"`
 	Users int `json:"users"`

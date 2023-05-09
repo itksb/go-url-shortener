@@ -10,6 +10,7 @@ import (
 
 const accessForbiddenText = "Internal resource. Access forbidden by security policy"
 
+// NewAccessMiddleware - filters access by IP and trusted subnet
 func NewAccessMiddleware(trustedSubnet string, l *logger.Logger) func(next http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

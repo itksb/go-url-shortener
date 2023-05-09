@@ -233,6 +233,7 @@ func getLastIDOrDefault(file *os.File) (int64, error) {
 
 }
 
+// GetStats - get service statistics
 func (s *storage) GetStats(ctx context.Context) (shortener.InternalStats, error) {
 	s.mtx.Lock()
 	defer s.mtx.Unlock()
