@@ -30,3 +30,9 @@ type ShortenBatchResponse []ShortenBatchItemResponse
 
 // ShortenDeleteBatchRequest - .
 type ShortenDeleteBatchRequest []string
+
+// ShortenInternalStatsResponse - .
+type ShortenInternalStatsResponse struct {
+	Urls  int `json:"urls"`
+	Users int `json:"users"`
+}

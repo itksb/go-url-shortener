@@ -27,6 +27,11 @@ type URLListItem struct {
 	DeletedAt   *string `json:"-" db:"deleted_at,sql.Null*"`
 }
 
+type InternalStats struct {
+	URLs  int `json:"urls"`
+	Users int `json:"users"`
+}
+
 // NewShortener - constructor
 func NewShortener(l logger.Interface, storage ShortenerStorage) *Service {
 	return &Service{

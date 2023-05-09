@@ -75,7 +75,13 @@ func NewApp(cfg config.Config) (*App, error) {
 	}
 	sessionStore := session.NewCookieStore(codec)
 
-	routeHandler, err := router.NewRouter(h, sessionStore, l, cfg.Debug)
+	routeHandler, err := router.NewRouter(
+		h,
+		sessionStore,
+		l,
+		cfg.Debug,
+		cfg.TrustedSubnet,
+	)
 	if err != nil {
 		l.Error(fmt.Sprintf("Router creating error: %s", err.Error()))
 		return nil, err

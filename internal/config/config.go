@@ -27,6 +27,7 @@ type Config struct {
 	Debug           bool          `json:"-"`                 // is debug mode
 	EnableHTTPS     bool          `json:"enable_https"`      // enable https
 	Config          string        `json:"-"`                 // config file path
+	TrustedSubnet   string        `json:"trusted_subnet"`    // CIDR, e.g.: 127.0.0.1/24
 }
 
 // NewConfig  configuration constructor
@@ -41,10 +42,11 @@ func NewConfig() (Config, error) {
 			HashKey:  "1234567890",
 			BlockKey: "0123456701234567" + "0123456701234567",
 		},
-		Dsn:         "",
-		Debug:       false,
-		EnableHTTPS: false,
-		Config:      "",
+		Dsn:           "",
+		Debug:         false,
+		EnableHTTPS:   false,
+		Config:        "",
+		TrustedSubnet: "",
 	}
 	return cfg, nil
 }
@@ -124,6 +126,12 @@ func (cfg *Config) UseOsEnv() {
 	if ok {
 		cfg.Config = configFile
 	}
+
+	trustedSubnet, ok := os.LookupEnv("TRUSTED_SUBNET")
+	if ok {
+		cfg.TrustedSubnet = trustedSubnet
+	}
+
 }
 
 // UseFlags applies run flags
@@ -142,6 +150,7 @@ func (cfg *Config) UseFlags() {
 	flag.Bool("s", cfg.EnableHTTPS, "EnableHTTPS")
 	configFile := flag.String("c", cfg.Config, "CONFIG")
 	configFile2 := flag.String("config", cfg.Config, "CONFIG")
+	trustedSubnet := flag.String("t", cfg.TrustedSubnet, "Trusted Subnet address")
 	flag.Parse()
 
 	var err error
@@ -173,6 +182,9 @@ func (cfg *Config) UseFlags() {
 	}
 	if *configFile2 != "" {
 		cfg.Config = *configFile2
+	}
+	if *trustedSubnet != "" {
+		cfg.TrustedSubnet = *trustedSubnet
 	}
 }
 
@@ -253,6 +265,10 @@ func mergeConfigs(result, cfg2 *Config) error {
 	}
 	if !result.EnableHTTPS {
 		result.EnableHTTPS = cfg2.EnableHTTPS
+	}
+
+	if result.TrustedSubnet == "" {
+		result.TrustedSubnet = cfg2.TrustedSubnet
 	}
 
 	return nil

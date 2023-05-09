@@ -42,8 +42,6 @@ func main() {
 		log.Fatal(err)
 	}
 
-	////
-
 	doneCh := make(chan struct{})
 	go func() {
 		sigint := make(chan os.Signal, 1)
