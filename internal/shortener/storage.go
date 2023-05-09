@@ -14,6 +14,7 @@ type ShortenerStorage interface {
 	GetURL(ctx context.Context, id string) (URLListItem, error)
 	ListURLByUserID(ctx context.Context, userID string) ([]URLListItem, error)
 	DeleteURLBatch(ctx context.Context, userID string, ids []string) error
+	GetStats(ctx context.Context) (InternalStats, error)
 
 	io.Closer
 }

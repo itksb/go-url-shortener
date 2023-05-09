@@ -8,6 +8,8 @@ import (
 	"strconv"
 )
 
+var _ shortener.ShortenerStorage = &storageMock{}
+
 type storageMock struct {
 	urls         map[int64]shortener.URLListItem
 	currentURLID int64
@@ -15,6 +17,20 @@ type storageMock struct {
 
 func newStorageMock(urls map[int64]shortener.URLListItem) *storageMock {
 	return &storageMock{urls: urls, currentURLID: 0}
+}
+
+// GetStats - get statistics of the service
+func (s *storageMock) GetStats(ctx context.Context) (shortener.InternalStats, error) {
+	result := shortener.InternalStats{}
+	result.URLs = int(s.currentURLID)
+	// imitation of Set data type
+	resMap := make(map[string]struct{}, 0)
+	for _, item := range s.urls {
+		resMap[item.UserID] = struct{}{}
+	}
+	result.Users = len(resMap)
+
+	return result, nil
 }
 
 // SaveURL persist given url

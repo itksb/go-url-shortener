@@ -203,3 +203,18 @@ func (h *Handler) APIDeleteURLBatch(w http.ResponseWriter, r *http.Request) {
 
 	w.WriteHeader(http.StatusAccepted)
 }
+
+// APIInternalStats - .
+func (h *Handler) APIInternalStats(w http.ResponseWriter, r *http.Request) {
+	result := api.ShortenInternalStatsResponse{}
+	ctx := r.Context()
+	stats, err := h.dbservice.GetStats(ctx)
+	if err != nil {
+		h.logger.Error(fmt.Sprintf("error while getting statistics: %s", err.Error()))
+		SendJSONError(w, "shortener service error", http.StatusInternalServerError)
+		return
+	}
+
+	result.Users, result.Urls = stats.Users, stats.URLs
+	SendJSONOk(w, result, http.StatusOK)
+}
