@@ -20,10 +20,19 @@ type DefaultResponse struct {
 	Msg string `json:"msg"`
 }
 
-// SendJSONError - creates APIError with msg, sets json headers
-func SendJSONError(w http.ResponseWriter, msg string, code int) {
+func CreateErrorMsg(msg string) ([]byte, error) {
 	e := APIError{Error: msg}
 	js, err := json.MarshalIndent(e, "", "  ")
+	if err != nil {
+		return nil, err
+	}
+
+	return js, nil
+}
+
+// SendJSONError - creates APIError with msg, sets json headers
+func SendJSONError(w http.ResponseWriter, msg string, code int) {
+	js, err := CreateErrorMsg(msg)
 	if err != nil {
 		http.Error(w, "{\"error\": \"error of json encoding\"}", http.StatusInternalServerError)
 		return

@@ -16,7 +16,7 @@ type storageMock struct {
 }
 
 func newStorageMock(urls map[int64]shortener.URLListItem) *storageMock {
-	return &storageMock{urls: urls, currentURLID: 0}
+	return &storageMock{urls: urls, currentURLID: int64(len(urls))}
 }
 
 // GetStats - get statistics of the service

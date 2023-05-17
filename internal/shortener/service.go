@@ -82,3 +82,8 @@ func (s *Service) DeleteURLBatch(ctx context.Context, userID string, ids []strin
 func (s *Service) Close() error {
 	return s.storage.Close()
 }
+
+// GetStatistics - .
+func (s *Service) GetStatistics(ctx context.Context) (InternalStats, error) {
+	return s.storage.GetStats(ctx)
+}

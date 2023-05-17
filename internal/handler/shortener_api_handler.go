@@ -26,6 +26,11 @@ func (h *Handler) APIShortenURL(w http.ResponseWriter, r *http.Request) {
 		h.logger.Error("api shorten request", err)
 		return
 	}
+	if len(reqBytes) == 0 {
+		SendJSONError(w, "error of reading request: empty", http.StatusInternalServerError)
+		h.logger.Error("api shorten request: empty body")
+		return
+	}
 	request := api.ShortenRequest{}
 
 	if err = json.Unmarshal(reqBytes, &request); err != nil {
@@ -42,7 +47,7 @@ func (h *Handler) APIShortenURL(w http.ResponseWriter, r *http.Request) {
 
 	ctx := r.Context()
 	userID, ok := ctx.Value(user.FieldID).(string)
-	if !ok {
+	if !ok || userID == "" {
 		h.logger.Error("no user id found")
 		SendJSONError(w, "no user found", http.StatusInternalServerError)
 		return
@@ -76,7 +81,7 @@ func (h *Handler) APIShortenURL(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) APIListUserURL(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	userID, ok := ctx.Value(user.FieldID).(string)
-	if !ok {
+	if !ok || userID == "" {
 		h.logger.Error("user id not found, but it must already be here. see middleware which setup user session")
 		SendJSONError(w, "no user found in the session", http.StatusInternalServerError)
 		return
@@ -208,7 +213,8 @@ func (h *Handler) APIDeleteURLBatch(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) APIInternalStats(w http.ResponseWriter, r *http.Request) {
 	result := api.ShortenInternalStatsResponse{}
 	ctx := r.Context()
-	stats, err := h.dbservice.GetStats(ctx)
+
+	stats, err := h.urlshortener.GetStatistics(ctx)
 	if err != nil {
 		h.logger.Error(fmt.Sprintf("error while getting statistics: %s", err.Error()))
 		SendJSONError(w, "shortener service error", http.StatusInternalServerError)

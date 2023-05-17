@@ -3,11 +3,13 @@ package handler
 import (
 	"context"
 	"fmt"
+	"github.com/golang/mock/gomock"
 	"github.com/itksb/go-url-shortener/internal/config"
 	"github.com/itksb/go-url-shortener/internal/dbstorage"
 	"github.com/itksb/go-url-shortener/internal/shortener"
 	"github.com/itksb/go-url-shortener/internal/user"
 	"github.com/itksb/go-url-shortener/pkg/logger"
+	mock_logger "github.com/itksb/go-url-shortener/pkg/logger/mock"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -35,8 +37,8 @@ func TestHandler_GetURL(t *testing.T) {
 		locationHeader string
 	}
 
-	// mocks
-	l := &loggerMock{}
+	l := mock_logger.NewMockInterface(gomock.NewController(t))
+	l.EXPECT().Info(gomock.Any(), gomock.Any()).AnyTimes()
 
 	// test
 	tests := []struct {
@@ -154,7 +156,7 @@ func TestHandler_GetURL2(t *testing.T) {
 		cfg          config.Config
 	}
 
-	l := loggerMock{}
+	l := mock_logger.NewMockInterface(gomock.NewController(t))
 	stMock := newStorageMock(map[int64]shortener.URLListItem{
 
 		1: {
@@ -181,8 +183,8 @@ func TestHandler_GetURL2(t *testing.T) {
 		{
 			name: "positive 1",
 			fields: want{
-				logger:       &l,
-				urlshortener: shortener.NewShortener(&l, stMock),
+				logger:       l,
+				urlshortener: shortener.NewShortener(l, stMock),
 				cfg: config.Config{
 					ShortBaseURL: "http://localhost:8080",
 				},
