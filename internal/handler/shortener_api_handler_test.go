@@ -296,26 +296,27 @@ func TestHandler_APIListUserURL(t *testing.T) {
 
 		createdTime := time.Date(1986, time.August, 25, 0, 0, 0, 0, time.Local)
 
-		storage := newStorageMock(map[int64]shortener.URLListItem{
-			1: {
+		ctrl := gomock.NewController(t)
+		storage := mock_shortener.NewMockShortenerStorage(ctrl)
+		storage.EXPECT().ListURLByUserID(ctx, userID).Return([]shortener.URLListItem{
+			{
 				ID:          1,
 				UserID:      userID,
 				ShortURL:    "http://short.example.com/1",
 				OriginalURL: "http://example.com",
 				CreatedAt:   createdTime.String(),
 				UpdatedAt:   createdTime.String(),
-				DeletedAt:   nil,
 			},
-			2: {
+			{
 				ID:          2,
 				UserID:      userID,
 				ShortURL:    "http://short.example.com/2",
 				OriginalURL: "http://example.com/qwerty",
 				CreatedAt:   createdTime.String(),
 				UpdatedAt:   createdTime.String(),
-				DeletedAt:   nil,
 			},
-		})
+		}, nil)
+
 		urlshortener := shortener.NewShortener(l, storage)
 
 		h := NewHandler(
