@@ -20,6 +20,7 @@ type DefaultResponse struct {
 	Msg string `json:"msg"`
 }
 
+// CreateErrorMsg - creates APIError with msg
 func CreateErrorMsg(msg string) ([]byte, error) {
 	e := APIError{Error: msg}
 	js, err := json.MarshalIndent(e, "", "  ")
