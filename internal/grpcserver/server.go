@@ -32,6 +32,7 @@ type server struct {
 	cfg          config.Config
 }
 
+// NewGRPCServer - constructor
 func NewGRPCServer(
 	dbping handler.IPingableDB,
 	logger logger.Interface,
@@ -46,6 +47,7 @@ func NewGRPCServer(
 	}
 }
 
+// Ping - check db connection
 func (s server) Ping(ctx context.Context, in *empty.Empty) (*empty.Empty, error) {
 	ctx2, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
@@ -58,6 +60,7 @@ func (s server) Ping(ctx context.Context, in *empty.Empty) (*empty.Empty, error)
 	return empty, nil
 }
 
+// ShortUrl returns short URL by original URL
 func (s server) ShortUrl(
 	ctx context.Context,
 	request *go_url_shortener.ShortURLRequest,
@@ -96,8 +99,7 @@ func (s server) ShortUrl(
 	return result, nil
 }
 
-// Get returns original URL by short URL ID
-// urlshortener.GetURL(r.Context(), id)
+// GetURL returns original URL by short URL
 func (s server) GetURL(
 	ctx context.Context,
 	request *go_url_shortener.GetURLRequest,
@@ -138,6 +140,7 @@ func (s server) GetURL(
 	return &result, nil
 }
 
+// ListUrl returns list of short URLs by user ID
 func (s server) ListUrl(
 	ctx context.Context,
 	empty *empty.Empty,
@@ -195,6 +198,7 @@ func (s server) ListUrl(
 
 }
 
+// ShortenBatch returns list of short URLs by user ID
 func (s server) ShortenBatch(
 	ctx context.Context,
 	request *go_url_shortener.ShortURLBatchRequest,
@@ -247,6 +251,7 @@ func (s server) ShortenBatch(
 	}
 }
 
+// DeleteBatch deletes urls by ids
 func (s server) DeleteBatch(
 	ctx context.Context,
 	request *go_url_shortener.DeleteURLBatchRequest,
@@ -280,6 +285,7 @@ func (s server) DeleteBatch(
 	return &empty.Empty{}, nil
 }
 
+// InternalStats returns internal statistics
 func (s server) InternalStats(ctx context.Context, empty *empty.Empty) (*go_url_shortener.InternalStatsResponse, error) {
 	stats, err := s.urlshortener.GetStatistics(ctx)
 	if err != nil {
