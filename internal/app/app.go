@@ -7,6 +7,7 @@ import (
 	"github.com/itksb/go-url-shortener/internal/dbstorage"
 	"github.com/itksb/go-url-shortener/internal/filestorage"
 	"github.com/itksb/go-url-shortener/internal/grpcserver"
+	"github.com/itksb/go-url-shortener/internal/grpcserver/interceptor"
 	"github.com/itksb/go-url-shortener/internal/handler"
 	"github.com/itksb/go-url-shortener/internal/router"
 	"github.com/itksb/go-url-shortener/internal/shortener"
@@ -101,6 +102,7 @@ func NewApp(cfg config.Config) (*App, error) {
 		l,
 		db,
 		urlshortener,
+		codec,
 	)
 
 	l.Info("is debug environment? ", cfg.Debug)
@@ -203,9 +205,14 @@ func createGRPCServer(
 	l logger.Interface,
 	dbping handler.IPingableDB,
 	urlshortener *shortener.Service,
+	codec session.Codec,
 ) *grpc.Server {
 	// создаём gRPC-сервер без зарегистрированной службы
-	s := grpc.NewServer()
+	s := grpc.NewServer(
+		grpc.UnaryInterceptor(
+			interceptor.CreateUnaryAuthInterceptor(codec),
+		),
+	)
 
 	appServer := grpcserver.NewGRPCServer(
 		dbping,
