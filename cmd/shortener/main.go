@@ -52,6 +52,7 @@ func main() {
 		if err2 := application.HTTPServer.Shutdown(ctx); err2 != nil {
 			log.Printf("HTTP Server Shutdown Error: %v", err2)
 		}
+		application.GRPCServer.GracefulStop()
 		close(doneCh)
 	}()
 

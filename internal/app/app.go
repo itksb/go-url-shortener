@@ -15,8 +15,10 @@ import (
 	"github.com/itksb/go-url-shortener/pkg/logger"
 	"github.com/itksb/go-url-shortener/pkg/session"
 	go_url_shortener "github.com/itksb/go-url-shortener/proto"
+	"golang.org/x/sync/errgroup"
 	"google.golang.org/grpc"
 	"io"
+	"net"
 	"net/http"
 	"time"
 
@@ -31,6 +33,8 @@ type App struct {
 	urlshortener  *shortener.Service
 	reposhortener shortener.ShortenerStorage
 	enableHTTPS   bool
+
+	grpcAddr string
 
 	io.Closer
 }
@@ -92,7 +96,12 @@ func NewApp(cfg config.Config) (*App, error) {
 	}
 
 	srv := createHTTPServer(routeHandler, cfg)
-	grpcSrv := grpcserver.NewGRPCServer()
+	grpcSrv := createGRPCServer(
+		cfg,
+		l,
+		db,
+		urlshortener,
+	)
 
 	l.Info("is debug environment? ", cfg.Debug)
 
@@ -103,6 +112,7 @@ func NewApp(cfg config.Config) (*App, error) {
 		urlshortener:  urlshortener,
 		reposhortener: repo,
 		enableHTTPS:   cfg.EnableHTTPS,
+		grpcAddr:      cfg.GRPCAddr,
 		Closer:        nil,
 	}, nil
 }
@@ -110,10 +120,25 @@ func NewApp(cfg config.Config) (*App, error) {
 // Run - run the application instance
 func (app *App) Run() error {
 	app.logger.Info("server starting", "addr", app.HTTPServer.Addr)
+	g := errgroup.Group{}
 	if app.enableHTTPS {
-		return app.HTTPServer.ListenAndServeTLS("", "")
+		g.Go(func() error {
+			return app.HTTPServer.ListenAndServeTLS("", "")
+		})
+	} else {
+		g.Go(app.HTTPServer.ListenAndServe)
 	}
-	return app.HTTPServer.ListenAndServe()
+
+	g.Go(func() error {
+		listen, err := net.Listen("tcp", app.grpcAddr)
+		if err != nil {
+			app.logger.Error("failed to listen grpsAddr", "error", err)
+			return err
+		}
+		return app.GRPCServer.Serve(listen)
+	})
+
+	return g.Wait()
 }
 
 // Close -
@@ -176,10 +201,20 @@ func createHTTPServer(routeHandler http.Handler, cfg config.Config) *http.Server
 func createGRPCServer(
 	cfg config.Config,
 	l logger.Interface,
+	dbping handler.IPingableDB,
+	urlshortener *shortener.Service,
 ) *grpc.Server {
 	// создаём gRPC-сервер без зарегистрированной службы
 	s := grpc.NewServer()
-	// регистрируем сервис
-	go_url_shortener.RegisterShortenerServer(s, grpcserver.NewGRPCServer())
 
+	appServer := grpcserver.NewGRPCServer(
+		dbping,
+		l,
+		urlshortener,
+		cfg,
+	)
+	// регистрируем сервис
+	go_url_shortener.RegisterShortenerServer(s, appServer)
+
+	return s
 }
