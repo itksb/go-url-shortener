@@ -12,7 +12,7 @@ func Test_createShortenURL(t *testing.T) {
 	id := "abcd1234"
 	baseURL := "https://example.com"
 	expectedResult := "https://example.com/abcd1234"
-	result := createShortenURL(id, baseURL)
+	result := CreateShortenURL(id, baseURL)
 
 	if result != expectedResult {
 		t.Errorf("Expected result: %s, but got: %s", expectedResult, result)
@@ -76,6 +76,32 @@ func TestSendJSONOk(t *testing.T) {
 	}
 
 	actualresp := expectedResponse{}
+	assert.NoError(t, json.Unmarshal(rr.Body.Bytes(), &actualresp))
+	assert.Equal(t, expectedBody, actualresp)
+
+}
+
+func TestSendJSONOk2(t *testing.T) {
+	rr := httptest.NewRecorder()
+	content := "some content here"
+	code := http.StatusOK
+	err := SendJSONOk(rr, content, code)
+	if err != nil {
+		t.Errorf("unexpected error: %v", err)
+	}
+
+	if rr.Code != code {
+		t.Errorf("expected response code %d, but got %d", code, rr.Code)
+	}
+
+	contentType := rr.Header().Get("Content-Type")
+	if contentType != "application/json" {
+		t.Errorf("expected content type 'application/json', but got '%s'", contentType)
+	}
+
+	expectedBody := DefaultResponse{Msg: content}
+
+	actualresp := DefaultResponse{}
 	assert.NoError(t, json.Unmarshal(rr.Body.Bytes(), &actualresp))
 	assert.Equal(t, expectedBody, actualresp)
 

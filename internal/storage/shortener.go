@@ -92,3 +92,19 @@ func (s *storage) DeleteURLBatch(ctx context.Context, userID string, ids []strin
 
 // Close destructor
 func (s *storage) Close() error { return nil }
+
+// GetStats get service statistics
+func (s *storage) GetStats(ctx context.Context) (shortener.InternalStats, error) {
+	s.urlMtx.RLock()
+	defer s.urlMtx.RUnlock()
+
+	result := shortener.InternalStats{}
+	userSet := make(map[string]struct{}, 0)
+	for _, item := range s.urls {
+		result.URLs++
+		userSet[item.UserID] = struct{}{}
+	}
+
+	result.Users = len(userSet)
+	return result, nil
+}

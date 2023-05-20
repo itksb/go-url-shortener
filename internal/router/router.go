@@ -10,7 +10,13 @@ import (
 )
 
 // NewRouter - constructor
-func NewRouter(h *handler.Handler, sessionStore session.Store, l *logger.Logger, debug bool) (http.Handler, error) {
+func NewRouter(
+	h *handler.Handler,
+	sessionStore session.Store,
+	l *logger.Logger,
+	debug bool,
+	trustedSubnet string,
+) (http.Handler, error) {
 	r := chi.NewRouter()
 
 	r.Use(gzipUnpackMiddleware)
@@ -29,6 +35,14 @@ func NewRouter(h *handler.Handler, sessionStore session.Store, l *logger.Logger,
 		r2.MethodFunc(http.MethodGet, "/api/user/urls", h.APIListUserURL)
 		r2.MethodFunc(http.MethodPost, "/api/shorten/batch", h.APIShortenURLBatch)
 		r2.MethodFunc(http.MethodDelete, "/api/user/urls", h.APIDeleteURLBatch)
+
+	})
+
+	accessMdl := NewAccessMiddleware(trustedSubnet, l)
+	// /api/internal group
+	r.Group(func(r2 chi.Router) {
+		r2.Use(accessMdl)
+		r2.MethodFunc(http.MethodGet, "/api/internal/stats", h.APIInternalStats)
 	})
 
 	r.MethodFunc(http.MethodGet, "/health", h.HealthCheck)

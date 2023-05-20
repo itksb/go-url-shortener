@@ -42,7 +42,7 @@ func (h *Handler) ShortenURL(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "text/plain")
 
-	w.Write([]byte(createShortenURL(sURLId, h.cfg.ShortBaseURL)))
+	w.Write([]byte(CreateShortenURL(sURLId, h.cfg.ShortBaseURL)))
 
 }
 

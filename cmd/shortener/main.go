@@ -42,8 +42,6 @@ func main() {
 		log.Fatal(err)
 	}
 
-	////
-
 	doneCh := make(chan struct{})
 	go func() {
 		sigint := make(chan os.Signal, 1)
@@ -54,6 +52,7 @@ func main() {
 		if err2 := application.HTTPServer.Shutdown(ctx); err2 != nil {
 			log.Printf("HTTP Server Shutdown Error: %v", err2)
 		}
+		application.GRPCServer.GracefulStop()
 		close(doneCh)
 	}()
 

@@ -27,6 +27,12 @@ type URLListItem struct {
 	DeletedAt   *string `json:"-" db:"deleted_at,sql.Null*"`
 }
 
+// InternalStats - .
+type InternalStats struct {
+	URLs  int `json:"urls"`
+	Users int `json:"users"`
+}
+
 // NewShortener - constructor
 func NewShortener(l logger.Interface, storage ShortenerStorage) *Service {
 	return &Service{
@@ -75,4 +81,9 @@ func (s *Service) DeleteURLBatch(ctx context.Context, userID string, ids []strin
 // Close destructor
 func (s *Service) Close() error {
 	return s.storage.Close()
+}
+
+// GetStatistics - .
+func (s *Service) GetStatistics(ctx context.Context) (InternalStats, error) {
+	return s.storage.GetStats(ctx)
 }

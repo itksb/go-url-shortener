@@ -26,6 +26,11 @@ func (h *Handler) APIShortenURL(w http.ResponseWriter, r *http.Request) {
 		h.logger.Error("api shorten request", err)
 		return
 	}
+	if len(reqBytes) == 0 {
+		SendJSONError(w, "error of reading request: empty", http.StatusInternalServerError)
+		h.logger.Error("api shorten request: empty body")
+		return
+	}
 	request := api.ShortenRequest{}
 
 	if err = json.Unmarshal(reqBytes, &request); err != nil {
@@ -42,7 +47,7 @@ func (h *Handler) APIShortenURL(w http.ResponseWriter, r *http.Request) {
 
 	ctx := r.Context()
 	userID, ok := ctx.Value(user.FieldID).(string)
-	if !ok {
+	if !ok || userID == "" {
 		h.logger.Error("no user id found")
 		SendJSONError(w, "no user found", http.StatusInternalServerError)
 		return
@@ -65,7 +70,7 @@ func (h *Handler) APIShortenURL(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusCreated)
 	}
 
-	response := api.ShortenResponse{Result: createShortenURL(sURLId, h.cfg.ShortBaseURL)}
+	response := api.ShortenResponse{Result: CreateShortenURL(sURLId, h.cfg.ShortBaseURL)}
 	if err := encoder.Encode(response); err != nil {
 		h.logger.Error("Encoding to json error", err)
 		w.WriteHeader(http.StatusInternalServerError)
@@ -76,7 +81,7 @@ func (h *Handler) APIShortenURL(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) APIListUserURL(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	userID, ok := ctx.Value(user.FieldID).(string)
-	if !ok {
+	if !ok || userID == "" {
 		h.logger.Error("user id not found, but it must already be here. see middleware which setup user session")
 		SendJSONError(w, "no user found in the session", http.StatusInternalServerError)
 		return
@@ -91,7 +96,7 @@ func (h *Handler) APIListUserURL(w http.ResponseWriter, r *http.Request) {
 
 	// creating short urls is infrastructure layer responsibility, that`s why it is here
 	for idx := range urlListItems {
-		urlListItems[idx].ShortURL = createShortenURL(fmt.Sprint(urlListItems[idx].ID), h.cfg.ShortBaseURL)
+		urlListItems[idx].ShortURL = CreateShortenURL(fmt.Sprint(urlListItems[idx].ID), h.cfg.ShortBaseURL)
 	}
 
 	if len(urlListItems) > 0 {
@@ -151,7 +156,7 @@ func (h *Handler) APIShortenURLBatch(w http.ResponseWriter, r *http.Request) {
 		if errors.Is(err, shortener.ErrDuplicate) {
 			conflict = true
 		}
-		shortURL := createShortenURL(sURLId, h.cfg.ShortBaseURL)
+		shortURL := CreateShortenURL(sURLId, h.cfg.ShortBaseURL)
 		responseItem := api.ShortenBatchItemResponse{
 			CorrelationID: shortenBatchItemRequest.CorrelationID,
 			ShortURL:      shortURL,
@@ -202,4 +207,20 @@ func (h *Handler) APIDeleteURLBatch(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusAccepted)
+}
+
+// APIInternalStats - .
+func (h *Handler) APIInternalStats(w http.ResponseWriter, r *http.Request) {
+	result := api.ShortenInternalStatsResponse{}
+	ctx := r.Context()
+
+	stats, err := h.urlshortener.GetStatistics(ctx)
+	if err != nil {
+		h.logger.Error(fmt.Sprintf("error while getting statistics: %s", err.Error()))
+		SendJSONError(w, "shortener service error", http.StatusInternalServerError)
+		return
+	}
+
+	result.Users, result.Urls = stats.Users, stats.URLs
+	SendJSONOk(w, result, http.StatusOK)
 }

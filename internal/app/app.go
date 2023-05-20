@@ -6,6 +6,8 @@ import (
 	"github.com/itksb/go-url-shortener/internal/config"
 	"github.com/itksb/go-url-shortener/internal/dbstorage"
 	"github.com/itksb/go-url-shortener/internal/filestorage"
+	"github.com/itksb/go-url-shortener/internal/grpcserver"
+	"github.com/itksb/go-url-shortener/internal/grpcserver/interceptor"
 	"github.com/itksb/go-url-shortener/internal/handler"
 	"github.com/itksb/go-url-shortener/internal/router"
 	"github.com/itksb/go-url-shortener/internal/shortener"
@@ -13,7 +15,11 @@ import (
 	"github.com/itksb/go-url-shortener/migrate"
 	"github.com/itksb/go-url-shortener/pkg/logger"
 	"github.com/itksb/go-url-shortener/pkg/session"
+	go_url_shortener "github.com/itksb/go-url-shortener/proto"
+	"golang.org/x/sync/errgroup"
+	"google.golang.org/grpc"
 	"io"
+	"net"
 	"net/http"
 	"time"
 
@@ -23,10 +29,13 @@ import (
 // App - application
 type App struct {
 	HTTPServer    *http.Server
+	GRPCServer    *grpc.Server
 	logger        logger.Interface
 	urlshortener  *shortener.Service
 	reposhortener shortener.ShortenerStorage
 	enableHTTPS   bool
+
+	grpcAddr string
 
 	io.Closer
 }
@@ -75,32 +84,63 @@ func NewApp(cfg config.Config) (*App, error) {
 	}
 	sessionStore := session.NewCookieStore(codec)
 
-	routeHandler, err := router.NewRouter(h, sessionStore, l, cfg.Debug)
+	routeHandler, err := router.NewRouter(
+		h,
+		sessionStore,
+		l,
+		cfg.Debug,
+		cfg.TrustedSubnet,
+	)
 	if err != nil {
 		l.Error(fmt.Sprintf("Router creating error: %s", err.Error()))
 		return nil, err
 	}
 
 	srv := createHTTPServer(routeHandler, cfg)
+	grpcSrv := createGRPCServer(
+		cfg,
+		l,
+		db,
+		urlshortener,
+		codec,
+	)
 
 	l.Info("is debug environment? ", cfg.Debug)
 
 	return &App{
 		HTTPServer:    srv,
+		GRPCServer:    grpcSrv,
 		logger:        l,
 		urlshortener:  urlshortener,
 		reposhortener: repo,
 		enableHTTPS:   cfg.EnableHTTPS,
+		grpcAddr:      cfg.GRPCAddr,
+		Closer:        nil,
 	}, nil
 }
 
 // Run - run the application instance
 func (app *App) Run() error {
 	app.logger.Info("server starting", "addr", app.HTTPServer.Addr)
+	g := errgroup.Group{}
 	if app.enableHTTPS {
-		return app.HTTPServer.ListenAndServeTLS("", "")
+		g.Go(func() error {
+			return app.HTTPServer.ListenAndServeTLS("", "")
+		})
+	} else {
+		g.Go(app.HTTPServer.ListenAndServe)
 	}
-	return app.HTTPServer.ListenAndServe()
+
+	g.Go(func() error {
+		listen, err := net.Listen("tcp", app.grpcAddr)
+		if err != nil {
+			app.logger.Error("failed to listen grpsAddr", "error", err)
+			return err
+		}
+		return app.GRPCServer.Serve(listen)
+	})
+
+	return g.Wait()
 }
 
 // Close -
@@ -158,4 +198,30 @@ func createHTTPServer(routeHandler http.Handler, cfg config.Config) *http.Server
 	}
 
 	return srv
+}
+
+func createGRPCServer(
+	cfg config.Config,
+	l logger.Interface,
+	dbping handler.IPingableDB,
+	urlshortener *shortener.Service,
+	codec session.Codec,
+) *grpc.Server {
+	// создаём gRPC-сервер без зарегистрированной службы
+	s := grpc.NewServer(
+		grpc.UnaryInterceptor(
+			interceptor.CreateUnaryAuthInterceptor(codec),
+		),
+	)
+
+	appServer := grpcserver.NewGRPCServer(
+		dbping,
+		l,
+		urlshortener,
+		cfg,
+	)
+	// регистрируем сервис
+	go_url_shortener.RegisterShortenerServer(s, appServer)
+
+	return s
 }

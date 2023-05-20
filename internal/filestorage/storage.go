@@ -232,3 +232,49 @@ func getLastIDOrDefault(file *os.File) (int64, error) {
 	return 0, fmt.Errorf("error while parsing last line of the fileWrite")
 
 }
+
+// GetStats - get service statistics
+func (s *storage) GetStats(ctx context.Context) (shortener.InternalStats, error) {
+	s.mtx.Lock()
+	defer s.mtx.Unlock()
+
+	result := shortener.InternalStats{
+		URLs:  0,
+		Users: 0,
+	}
+
+	resultMap := make(map[string]int)
+
+	var line string
+	_, err := s.fileRead.Seek(0, io.SeekStart)
+	if err != nil {
+		s.logger.Error(fmt.Sprintf("filestorage: seek error. Err: %s", err.Error()))
+	}
+
+	reader := bufio.NewScanner(s.fileRead)
+	var urlsCount int
+	for reader.Scan() {
+		select {
+		case <-ctx.Done():
+			return result, errors.New("filestorage: interrupted by done channel")
+		default:
+			line = reader.Text()
+			_, _, userID, deletedAt, ok := extractValuesFromTheLine(line)
+			if ok && deletedAt == "" {
+				resultMap[userID] = resultMap[userID] + 1
+				urlsCount++
+			}
+		}
+	}
+
+	err = s.reader.Err()
+	if err != nil {
+		s.logger.Error(fmt.Sprintf("filestorage: reader.Scan() error. Err: %s", err.Error()))
+		return result, err
+	}
+
+	result.Users = len(resultMap)
+	result.URLs = urlsCount
+
+	return result, nil
+}
