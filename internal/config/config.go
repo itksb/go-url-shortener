@@ -28,6 +28,7 @@ type Config struct {
 	EnableHTTPS     bool          `json:"enable_https"`      // enable https
 	Config          string        `json:"-"`                 // config file path
 	TrustedSubnet   string        `json:"trusted_subnet"`    // CIDR, e.g.: 127.0.0.1/24
+	GRPCAddr        string        `json:"grpc_address"`      // gRPC server address
 }
 
 // NewConfig  configuration constructor
@@ -47,6 +48,7 @@ func NewConfig() (Config, error) {
 		EnableHTTPS:   false,
 		Config:        "",
 		TrustedSubnet: "",
+		GRPCAddr:      ":3200",
 	}
 	return cfg, nil
 }
@@ -132,11 +134,17 @@ func (cfg *Config) UseOsEnv() {
 		cfg.TrustedSubnet = trustedSubnet
 	}
 
+	grpcAddr, ok := os.LookupEnv("GRPC_ADDRESS")
+	if ok {
+		cfg.GRPCAddr = grpcAddr
+	}
+
 }
 
 // UseFlags applies run flags
 func (cfg *Config) UseFlags() {
 	appHost := flag.String("a", cfg.AppHost, "SERVER_ADDRESS")
+	grpcAddr := flag.String("g", cfg.GRPCAddr, "GRPC_ADDRESS")
 	shortBaseURL := flag.String("b", cfg.ShortBaseURL, "BASE_URL")
 	fileStoragePath := flag.String("f", cfg.FileStoragePath, "FILE_STORAGE_PATH")
 	curDebug := func() string {
@@ -185,6 +193,10 @@ func (cfg *Config) UseFlags() {
 	}
 	if *trustedSubnet != "" {
 		cfg.TrustedSubnet = *trustedSubnet
+	}
+
+	if *grpcAddr != "" {
+		cfg.GRPCAddr = *grpcAddr
 	}
 }
 
@@ -269,6 +281,10 @@ func mergeConfigs(result, cfg2 *Config) error {
 
 	if result.TrustedSubnet == "" {
 		result.TrustedSubnet = cfg2.TrustedSubnet
+	}
+
+	if result.GRPCAddr == "" {
+		result.GRPCAddr = cfg2.GRPCAddr
 	}
 
 	return nil

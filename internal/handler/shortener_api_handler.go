@@ -70,7 +70,7 @@ func (h *Handler) APIShortenURL(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusCreated)
 	}
 
-	response := api.ShortenResponse{Result: createShortenURL(sURLId, h.cfg.ShortBaseURL)}
+	response := api.ShortenResponse{Result: CreateShortenURL(sURLId, h.cfg.ShortBaseURL)}
 	if err := encoder.Encode(response); err != nil {
 		h.logger.Error("Encoding to json error", err)
 		w.WriteHeader(http.StatusInternalServerError)
@@ -96,7 +96,7 @@ func (h *Handler) APIListUserURL(w http.ResponseWriter, r *http.Request) {
 
 	// creating short urls is infrastructure layer responsibility, that`s why it is here
 	for idx := range urlListItems {
-		urlListItems[idx].ShortURL = createShortenURL(fmt.Sprint(urlListItems[idx].ID), h.cfg.ShortBaseURL)
+		urlListItems[idx].ShortURL = CreateShortenURL(fmt.Sprint(urlListItems[idx].ID), h.cfg.ShortBaseURL)
 	}
 
 	if len(urlListItems) > 0 {
@@ -156,7 +156,7 @@ func (h *Handler) APIShortenURLBatch(w http.ResponseWriter, r *http.Request) {
 		if errors.Is(err, shortener.ErrDuplicate) {
 			conflict = true
 		}
-		shortURL := createShortenURL(sURLId, h.cfg.ShortBaseURL)
+		shortURL := CreateShortenURL(sURLId, h.cfg.ShortBaseURL)
 		responseItem := api.ShortenBatchItemResponse{
 			CorrelationID: shortenBatchItemRequest.CorrelationID,
 			ShortURL:      shortURL,

@@ -12,7 +12,7 @@ func Test_createShortenURL(t *testing.T) {
 	id := "abcd1234"
 	baseURL := "https://example.com"
 	expectedResult := "https://example.com/abcd1234"
-	result := createShortenURL(id, baseURL)
+	result := CreateShortenURL(id, baseURL)
 
 	if result != expectedResult {
 		t.Errorf("Expected result: %s, but got: %s", expectedResult, result)

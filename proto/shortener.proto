@@ -1,0 +1,67 @@
+syntax = "proto3";
+
+package shortener;
+
+option go_package = "github.com/itksb/go-url-shortener";
+
+import "google/protobuf/empty.proto";
+
+message ShortURLRequest {
+  string url = 1;
+}
+
+message ShortURLResponse {
+  string result = 1;
+}
+
+message GetURLRequest {
+  string url = 1;
+}
+
+message GetURLResponse {
+  string result = 1;
+}
+
+message ListURLResponse {
+  message URLListItem {
+    string original_url = 1;
+    string short_url = 2;
+  }
+  repeated  URLListItem urls = 1;
+}
+
+message ShortURLBatchRequest {
+  message URLItem {
+    string original_url = 1;
+    string correlation_id = 2;
+  }
+  repeated URLItem urls = 1;
+}
+
+message ShortURLBatchResponse {
+  message URLItem {
+    string short_url = 2;
+    string correlation_id = 3;
+  }
+  repeated URLItem urls = 1;
+}
+
+message DeleteURLBatchRequest {
+  repeated string ids = 1;
+}
+
+message InternalStatsResponse {
+  uint64 urls = 1;
+  uint64 users = 2;
+}
+
+
+service Shortener {
+  rpc Ping(google.protobuf.Empty) returns (google.protobuf.Empty);
+  rpc ShortURL(ShortURLRequest) returns (ShortURLResponse);
+  rpc GetURL(GetURLRequest) returns (GetURLResponse);
+  rpc ListURL(google.protobuf.Empty) returns (ListURLResponse);
+  rpc ShortURLBatch(ShortURLBatchRequest) returns (ShortURLBatchResponse);
+  rpc DeleteURLBatch(DeleteURLBatchRequest) returns (google.protobuf.Empty);
+  rpc InternalStats(google.protobuf.Empty) returns (InternalStatsResponse);
+}

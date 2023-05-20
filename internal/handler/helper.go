@@ -6,7 +6,8 @@ import (
 	"net/http"
 )
 
-func createShortenURL(id string, baseURL string) string {
+// CreateShortenURL - creates shorten url
+func CreateShortenURL(id string, baseURL string) string {
 	return fmt.Sprintf("%s/%s", baseURL, id)
 }
 

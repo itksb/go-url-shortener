@@ -6,6 +6,7 @@ import (
 	"github.com/itksb/go-url-shortener/internal/config"
 	"github.com/itksb/go-url-shortener/internal/dbstorage"
 	"github.com/itksb/go-url-shortener/internal/filestorage"
+	"github.com/itksb/go-url-shortener/internal/grpcserver"
 	"github.com/itksb/go-url-shortener/internal/handler"
 	"github.com/itksb/go-url-shortener/internal/router"
 	"github.com/itksb/go-url-shortener/internal/shortener"
@@ -13,6 +14,8 @@ import (
 	"github.com/itksb/go-url-shortener/migrate"
 	"github.com/itksb/go-url-shortener/pkg/logger"
 	"github.com/itksb/go-url-shortener/pkg/session"
+	go_url_shortener "github.com/itksb/go-url-shortener/proto"
+	"google.golang.org/grpc"
 	"io"
 	"net/http"
 	"time"
@@ -23,6 +26,7 @@ import (
 // App - application
 type App struct {
 	HTTPServer    *http.Server
+	GRPCServer    *grpc.Server
 	logger        logger.Interface
 	urlshortener  *shortener.Service
 	reposhortener shortener.ShortenerStorage
@@ -88,15 +92,18 @@ func NewApp(cfg config.Config) (*App, error) {
 	}
 
 	srv := createHTTPServer(routeHandler, cfg)
+	grpcSrv := grpcserver.NewGRPCServer()
 
 	l.Info("is debug environment? ", cfg.Debug)
 
 	return &App{
 		HTTPServer:    srv,
+		GRPCServer:    grpcSrv,
 		logger:        l,
 		urlshortener:  urlshortener,
 		reposhortener: repo,
 		enableHTTPS:   cfg.EnableHTTPS,
+		Closer:        nil,
 	}, nil
 }
 
@@ -164,4 +171,15 @@ func createHTTPServer(routeHandler http.Handler, cfg config.Config) *http.Server
 	}
 
 	return srv
+}
+
+func createGRPCServer(
+	cfg config.Config,
+	l logger.Interface,
+) *grpc.Server {
+	// создаём gRPC-сервер без зарегистрированной службы
+	s := grpc.NewServer()
+	// регистрируем сервис
+	go_url_shortener.RegisterShortenerServer(s, grpcserver.NewGRPCServer())
+
 }
